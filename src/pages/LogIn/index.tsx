@@ -11,7 +11,7 @@ const LogIn = () => {
     data: userData,
     error,
     refetch,
-  } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("https://api.sleact.sukwoo.kr/api/users"), {
+  } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("/api/users"), {
     staleTime: 10000,
   });
 
@@ -23,7 +23,7 @@ const LogIn = () => {
     setLogInError(false);
 
     axios
-      .post("https://api.sleact.sukwoo.kr/api/users/login", data, { withCredentials: true })
+      .post("/api/users/login", data, { withCredentials: true })
       .then((responese) => {
         console.log("responese : ", responese.data);
         refetch();
