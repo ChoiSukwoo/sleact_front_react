@@ -31,13 +31,13 @@ export const Label = styled.label({
 
 export const Input = styled.input({
   borderRadius: "4px",
-  border: "1px solid rgba(var(--sk_foreground_high_solid, 134, 134, 134), 1)",
+  border: "1px solid rgba( 134, 134, 134 , 1)",
   transition: "border 80ms ease-out, box-shadow 80ms ease-out",
   boxSizing: "border-box",
   margin: "0 0 20px",
   width: "100%",
-  color: "rgba(var(--sk_primary_foreground, 29, 28, 29), 1)",
-  backgroundColor: "rgba(var(--sk_primary_background, 255, 255, 255), 1)",
+  color: "rgba(29, 28, 29, 1)",
+  backgroundColor: "rgba( 255, 255, 255, 1)",
   padding: "12px",
   height: "44px",
   paddingTop: "11px",
@@ -45,7 +45,7 @@ export const Input = styled.input({
   fontSize: "18px",
   lineHeight: "1.33333333",
   "&:focus": {
-    boxShadow: "0 0 0 1px rgba(var(--sk_highlight, 18, 100, 163), 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
+    boxShadow: "0 0 0 1px rgba( 18, 100, 163, 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
   },
 });
 
@@ -72,7 +72,7 @@ export const Button = styled.button({
     border: "none",
   },
   "&:focus": {
-    boxShadow: "0 0 0 1px  rgba(var(--sk_highlight, 18, 100, 163), 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
+    boxShadow: "0 0 0 1px  rgba( 18, 100, 163, 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
   },
 });
 
