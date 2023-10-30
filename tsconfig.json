@@ -30,6 +30,7 @@
       "@pages/*": ["pages/*"],
       "@utils/*": ["utils/*"],
       "@typings/*": ["typings/*"],
+      "@const/*": ["const/*"],
       "@styles/*": ["styles/*"],
       "@svg/*": ["assets/svg/*"],
       "@img/*": ["assets/img/*"],
