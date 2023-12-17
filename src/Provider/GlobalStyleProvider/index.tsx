@@ -1,4 +1,5 @@
 import { Global, css } from "@emotion/react";
+import { Font } from "Styles";
 
 const InitStyle = css`
   div,
@@ -143,6 +144,10 @@ const InitStyle = css`
 `;
 
 const CustomStyle = css`
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     font-family: "Pretendard", "Noto Sans KR", sans-serif;
@@ -165,8 +170,8 @@ const CustomStyle = css`
     --fontWeight--Black: 900;
   }
 `;
-//스크롤바
 
+//스크롤바
 const ScrollbarStyle = css`
   :root {
     --scrollWidth--: 14px;
@@ -227,7 +232,8 @@ const FontStyle = css`
     font-family: "Pretendard";
     font-weight: 700;
     font-display: swap;
-    src: local("Pretendard Bold"), url("./Pretendard_woff2/Pretendard-Bold.woff2") format("woff2"), url("./woff/Pretendard-Bold.woff") format("woff");
+    src: local("Pretendard Bold"), url("./Pretendard_woff2/Pretendard-Bold.woff2") format("woff2"),
+      url("./woff/Pretendard-Bold.woff") format("woff");
   }
 
   @font-face {
@@ -274,7 +280,8 @@ const FontStyle = css`
     font-family: "Pretendard";
     font-weight: 100;
     font-display: swap;
-    src: local("Pretendard Thin"), url("./Pretendard_woff2/Pretendard-Thin.woff2") format("woff2"), url("./woff/Pretendard-Thin.woff") format("woff");
+    src: local("Pretendard Thin"), url("./Pretendard_woff2/Pretendard-Thin.woff2") format("woff2"),
+      url("./woff/Pretendard-Thin.woff") format("woff");
   }
 
   .thin {
@@ -303,6 +310,18 @@ const FontStyle = css`
   }
   .Black {
     font-weight: 900;
+  }
+
+  h1 {
+    ${Font.h1}
+  }
+
+  h2 {
+    ${Font.h2}
+  }
+
+  h6 {
+    ${Font.h6}
   }
 `;
 
