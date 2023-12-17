@@ -1,11 +1,9 @@
 import styled from "@emotion/styled";
+import { Font, Util } from "Styles";
 
 export const Header = styled.header({
+  ...Font.h1,
   textAlign: "center",
-  fontWeight: 700,
-  fontSize: "48px",
-  lineHeight: "46px",
-  letterSpacing: "-0.75px",
   marginTop: "50px",
   marginBottom: "50px",
 });
@@ -18,14 +16,10 @@ export const Form = styled.form({
 
 export const Label = styled.label({
   marginBottom: "16px",
-  "> span": {
-    display: "block",
+  "> h6": {
     textAlign: "left",
     paddingBottom: "8px",
-    fontSize: "15px",
     cursor: "pointer",
-    lineHeight: "1.46666667",
-    fontWeight: 700,
   },
 });
 
@@ -37,7 +31,7 @@ export const Input = styled.input({
   margin: "0 0 20px",
   width: "100%",
   color: "rgba(29, 28, 29, 1)",
-  backgroundColor: "rgba( 255, 255, 255, 1)",
+  backgroundColor: "white",
   padding: "12px",
   height: "44px",
   paddingTop: "11px",
@@ -49,43 +43,9 @@ export const Input = styled.input({
   },
 });
 
-export const Button = styled.button({
-  marginBottom: "12px",
-  width: "100%",
-  maxWidth: "100%",
-  color: "#fff",
-  backgroundColor: "#4a154b",
-  border: "none",
-  fontSize: "18px",
-  fontWeight: 900,
-  height: "44px",
-  minWidth: "96px",
-  padding: "0 16px 3px",
-  transition: "all 80ms linear",
-  userSelect: "none",
-  outline: "none",
-  cursor: "pointer",
-  borderRadius: "4px",
-  boxShadow: "0 1px 4px rgba(0, 0, 0, 0.3)",
-  "&:hover": {
-    backgroundColor: "rgba(74, 21, 75, 0.9)",
-    border: "none",
-  },
-  "&:focus": {
-    boxShadow: "0 0 0 1px  rgba( 18, 100, 163, 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
-  },
-});
-
 export const Error = styled.div({
-  color: "#e01e5a",
-  margin: "8px 0 16px",
-  fontWeight: "bold",
-});
-
-export const Success = styled.div({
-  color: "#2eb67d",
-  margin: "8px 0 16px",
-  fontWeight: "bold",
+  ...Util.Error,
+  marginBottom: "16px",
 });
 
 export const LinkContainer = styled.p({

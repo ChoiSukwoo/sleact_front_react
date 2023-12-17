@@ -1,5 +1,5 @@
 interface ApiErrorDto {
   success: boolean;
-  code: number;
-  data: string[];
+  statusCode: number;
+  message: string[];
 }
