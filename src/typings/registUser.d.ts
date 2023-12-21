@@ -4,6 +4,6 @@ interface RegistUserDTO {
   password: string;
 }
 
-interface SignUpDTO extends RegistUserDTO {
+interface SignUpFromEntity extends RegistUserDTO {
   passwordCheck: string;
 }
