@@ -3,6 +3,8 @@ import RouterProvider from "Provider/RouterProvider";
 import ToastProvider from "Provider/ToastProvider";
 import { QueryClient, QueryClientProvider } from "react-query";
 
+import "react-toastify/dist/ReactToastify.css";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

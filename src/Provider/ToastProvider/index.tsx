@@ -1,5 +1,18 @@
 import styled from "@emotion/styled";
-import { ToastContainer } from "react-toastify";
+import { IconProps, ToastContainer } from "react-toastify";
+
+import ClearIcon from "@svg/clear.svg?react";
+import CheckIcon from "@svg/check.svg?react";
+import WarningIcon from "@svg/warning.svg?react";
+
+const globalRenders = (nodeOrMsg: IconProps) => {
+  switch (nodeOrMsg.type) {
+    case "success":
+      return <CheckIcon color={"#fff"} />;
+    case "error":
+      return <WarningIcon color={"#fff"} />;
+  }
+};
 
 const ToastContainerStyle = styled(ToastContainer)({
   ".Toastify__toast": {
@@ -36,6 +49,6 @@ const ToastContainerStyle = styled(ToastContainer)({
 });
 
 const ToastProvider = () => {
-  return <ToastContainerStyle position="bottom-center" />;
+  return <ToastContainerStyle closeButton={ClearIcon} icon={globalRenders} position="bottom-center" />;
 };
 export default ToastProvider;
