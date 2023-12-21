@@ -25,40 +25,6 @@ export const Form = styled.form({
   maxWidth: "400px",
 });
 
-export const Label = styled.label({
-  marginBottom: "16px",
-  "> span": {
-    display: "block",
-    textAlign: "left",
-    paddingBottom: "8px",
-    fontSize: "15px",
-    cursor: "pointer",
-    lineHeight: "1.46666667",
-    fontWeight: 700,
-  },
-});
-
-export const Input = styled.input({
-  borderRadius: "4px",
-  border: "1px solid rgba( 134, 134, 134, 1)",
-  transition: "border 80ms ease-out, box-shadow 80ms ease-out",
-  boxSizing: "border-box",
-  margin: "0 0 20px",
-  width: "100%",
-  color: "rgba( 29, 28, 29, 1)",
-  backgroundColor: "rgba( 255, 255, 255, 1)",
-  padding: "12px",
-  height: "44px",
-  paddingTop: "11px",
-  paddingBottom: "13px",
-  fontSize: "18px",
-  lineHeight: "1.33333333",
-  "&:focus": {
-    "--saf-0": "rgba( 18, 100, 163, 1)",
-    boxShadow: "0 0 0 1px rgba( 134, 134, 134, 1), 0 0 0 5px rgba(29, 155, 209, 0.3)",
-  },
-});
-
 export const Error = styled.div({
   ...Util.Error,
   margin: "8px 0 16px",

@@ -1,37 +1,33 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
+import { Util } from "Styles";
 
-export const CreateModal = styled.div`
-  position: fixed;
-  text-align: center;
-  left: 0;
-  bottom: 0;
-  top: 0;
-  right: 0;
-  z-index: 1022;
+export const BackgroundStyle = styled.div({
+  position: "fixed",
+  left: 0,
+  bottom: 0,
+  top: 0,
+  right: 0,
+  zIndex: "var(--index--modalCover)",
+});
 
-  & > div {
-    margin-top: 200px;
-    display: inline-block;
-    width: 440px;
-    background: white;
-    --saf-0: rgba(var(--sk_foreground_low, 29, 28, 29), 0.13);
-    box-shadow: 0 0 0 1px var(--saf-0), 0 4px 12px 0 rgba(0, 0, 0, 0.12);
-    background-color: rgba(var(--sk_foreground_min_solid, 248, 248, 248), 1);
-    border-radius: 6px;
-    user-select: none;
-    max-width: 440px;
-    padding: 30px 40px 0;
-    z-index: 1012;
-    position: relative;
-  }
-`;
+export const ModalStyle = styled.div({
+  position: "relative",
+  transform: "translate(-50%, -50%)", // 정확한 중앙 정렬을 위해 변형
+  left: "50%", // 뷰포트의 가로 중앙에 위치
+  top: "50%", // 뷰포트의 세로 중앙에 위치
+  width: "fit-content",
+  background: "white",
+  boxShadow: "0 0 0 1px rgba(29,28,29,0.13), 0 4px 12px 0 rgba(0, 0, 0, 0.12)",
+  backgroundColor: "rgba(248, 248, 248, 1)",
+  borderRadius: "6px",
+  userSelect: "none",
+  padding: "30px 40px",
+  zIndex: "var(--index--modalContent)",
+});
 
-export const CloseModalButton = styled.button`
-  position: absolute;
-  right: 10px;
-  top: 6px;
-  background: transparent;
-  border: none;
-  font-size: 30px;
-  cursor: pointer;
-`;
+export const CloseModalButton = styled.button({
+  ...Util.ButtonStyleRemove,
+  position: "absolute",
+  right: "10px",
+  top: "10px",
+});

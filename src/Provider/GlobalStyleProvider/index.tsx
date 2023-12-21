@@ -141,6 +141,10 @@ const InitStyle = css`
     width: 100dvw;
     height: 100dvh;
   }
+
+  * {
+    box-sizing: border-box;
+  }
 `;
 
 const CustomStyle = css`

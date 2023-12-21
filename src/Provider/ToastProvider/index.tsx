@@ -4,6 +4,7 @@ import { IconProps, ToastContainer } from "react-toastify";
 import ClearIcon from "@svg/clear.svg?react";
 import CheckIcon from "@svg/check.svg?react";
 import WarningIcon from "@svg/warning.svg?react";
+import { FC } from "react";
 
 const globalRenders = (nodeOrMsg: IconProps) => {
   switch (nodeOrMsg.type) {
@@ -12,6 +13,14 @@ const globalRenders = (nodeOrMsg: IconProps) => {
     case "error":
       return <WarningIcon color={"#fff"} />;
   }
+};
+
+const CloseButton: FC = () => {
+  return (
+    <div style={{ display: "flex", flexShrink: 0, justifyContent: "center", alignItems: "center" }}>
+      <ClearIcon />
+    </div>
+  );
 };
 
 const ToastContainerStyle = styled(ToastContainer)({
@@ -46,9 +55,14 @@ const ToastContainerStyle = styled(ToastContainer)({
     fill: "white",
     opacity: 1,
   },
+  ".Toastify__toast-icon": {
+    flexShrink: 0,
+    width: "fit-content",
+    height: "fit-content",
+  },
 });
 
 const ToastProvider = () => {
-  return <ToastContainerStyle closeButton={ClearIcon} icon={globalRenders} position="bottom-center" />;
+  return <ToastContainerStyle closeButton={CloseButton} icon={globalRenders} position="bottom-center" />;
 };
 export default ToastProvider;

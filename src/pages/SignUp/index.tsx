@@ -1,15 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Error, Label, Input, LinkContainer, Header } from "./styles";
+import { Form, Error, LinkContainer, Header } from "./styles";
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
 import Loading from "./loading";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
-import { Button } from "@components/Button";
 import useAxiosPost from "@utils/useAxiosPost";
 import { toast } from "react-toastify";
 import { SignUpSuccessToken } from "@const/Toast";
 import { EntityToRegistUserDTO } from "@utils/EntityToDto";
+
+import { InputText } from "@components/InputText";
+import { LabelText } from "@components/LabelText";
+import { Button } from "@components/Button";
 
 const SignUp = () => {
   const { data: userData } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("/api/users"));
@@ -78,7 +81,12 @@ const SignUp = () => {
   };
 
   const onError: SubmitErrorHandler<SignUpFromEntity> = async (error) => {
-    setSignUpError(["제출중 오류가 발생하엿습니다."]);
+    const list: string[] = [];
+    error.email && error.email.message && list.push(error.email.message);
+    error.nickname && error.nickname.message && list.push(error.nickname.message);
+    error.password && error.password.message && list.push(error.password.message);
+    error.passwordCheck && error.passwordCheck.message && list.push(error.passwordCheck.message);
+    setSignUpError(list);
   };
 
   return userData === undefined ? (
@@ -87,28 +95,23 @@ const SignUp = () => {
     <div id="container">
       <Header>Sleact</Header>
       <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <Label id="email-label">
+        <LabelText id="email-label" style={{ marginBottom: "16px" }}>
           <span>이메일 주소</span>
-          <Input type="email" id="email" {...emailReg} />
-        </Label>
-        <Label id="nickname-label">
+          <InputText id="email-label" type="email" {...emailReg} />
+        </LabelText>
+        <LabelText id="nickname-label" style={{ marginBottom: "16px" }}>
           <span>닉네임</span>
-          <Input type="text" id="nickname" {...nicknameReg} />
-        </Label>
-        <Label id="password-label">
+          <InputText id="nickname-label" type="text" {...nicknameReg} />
+        </LabelText>
+        <LabelText id="password-label" style={{ marginBottom: "16px" }}>
           <span>비밀번호</span>
-          <Input type="password" id="password" {...passwordReg} />
-        </Label>
-        <Label id="password-check-label">
+          <InputText id="password-label" type="password" {...passwordReg} />
+        </LabelText>
+        <LabelText id="password-check-label" style={{ marginBottom: "16px" }}>
           <span>비밀번호 확인</span>
-          <Input type="password" id="password-check" {...passwordCheckReg} />
-          {errors.email && <Error>{errors.email.message}</Error>}
-          {errors.nickname && <Error>{errors.nickname.message}</Error>}
-          {errors.password && <Error>{errors.password.message}</Error>}
-          {errors.passwordCheck && <Error>{errors.passwordCheck.message}</Error>}
-          {signUpError.length > 0 &&
-            signUpError.map((errorMessage, index) => <Error key={signUpError + "_" + index}>{errorMessage}</Error>)}
-        </Label>
+          <InputText type="password" {...passwordCheckReg} />
+          {signUpError.length > 0 && signUpError.map((msg, index) => <Error key={"signUpError_" + index}>{msg}</Error>)}
+        </LabelText>
         <Button type="submit" style={{ marginBottom: "12px" }}>
           회원가입
         </Button>

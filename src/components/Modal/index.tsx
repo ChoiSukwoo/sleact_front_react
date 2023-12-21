@@ -1,28 +1,31 @@
-import { CreateModal, CloseModalButton } from "@components/Modal/styles";
-import { FC, MouseEventHandler, PropsWithChildren, useCallback } from "react";
+import { BackgroundStyle, CloseModalButton, ModalStyle } from "@components/Modal/styles";
+import { CSSProperties, FC, MouseEventHandler, PropsWithChildren, useCallback } from "react";
+
+import CloseIcon from "@svg/clear.svg?react";
 
 interface Props {
-  show: boolean;
+  isShow: boolean;
   onCloseModal: () => void;
+  style?: CSSProperties;
 }
 
-const Modal: FC<PropsWithChildren<Props>> = ({ show, children, onCloseModal }) => {
-  // const stopPropagation = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
-  //   e.stopPropagation();
-  // }, []);
+const Modal: FC<PropsWithChildren<Props>> = ({ isShow, children, onCloseModal, style }) => {
+  const stopPropagation = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    e.stopPropagation();
+  }, []);
 
-  // if (!show) {
-  //   return null;
-  // }
-  // return (
-  //   <CreateModal onClick={onCloseModal}>
-  //     <div onClick={stopPropagation}>
-  //       <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>
-  //       {children}
-  //     </div>
-  //   </CreateModal>
-  // );
-  return <></>;
+  return !isShow ? (
+    <></>
+  ) : (
+    <BackgroundStyle onClick={onCloseModal}>
+      <ModalStyle style={style} onClick={stopPropagation}>
+        <CloseModalButton onClick={onCloseModal}>
+          <CloseIcon />
+        </CloseModalButton>
+        {children}
+      </ModalStyle>
+    </BackgroundStyle>
+  );
 };
 
 export default Modal;

@@ -6,8 +6,10 @@ import { useState } from "react";
 import useAxiosPost from "@utils/useAxiosPost";
 import { Button } from "@components/Button";
 
-import { Header, Label, Input, LinkContainer, Error, Form } from "./styles";
+import { Header, LinkContainer, Error, Form } from "./styles";
 import Loading from "./loading";
+import { LabelText } from "@components/LabelText";
+import { InputText } from "@components/InputText";
 
 const LogIn = () => {
   const { data: userData, refetch } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("/api/users"));
@@ -50,15 +52,15 @@ const LogIn = () => {
     <div>
       <Header>Sleact</Header>
       <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <Label id="email-label">
-          <h6>이메일 주소</h6>
-          <Input type="email" id="email" {...register("email", { required: true })} />
-        </Label>
-        <Label id="password-label">
-          <h6>비밀번호</h6>
-          <Input type="password" id="password" {...register("password", { required: true })} />
+        <LabelText id="email-label" style={{ marginBottom: "16px" }}>
+          <span>이메일 주소</span>
+          <InputText type="email" id="email" {...register("email", { required: true })} />
+        </LabelText>
+        <LabelText id="password-label" style={{ marginBottom: "16px" }}>
+          <span>비밀번호</span>
+          <InputText type="password" id="password" {...register("password", { required: true })} />
           {errorMsg && <Error>{errorMsg}</Error>}
-        </Label>
+        </LabelText>
         <Button type="submit" style={{ marginBottom: "12px" }}>
           로그인
         </Button>
