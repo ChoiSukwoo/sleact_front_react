@@ -1,7 +1,7 @@
-import io from 'socket.io-client';
-import { useCallback } from 'react';
+import io from "socket.io-client";
+import { useCallback } from "react";
 
-const backUrl = 'http://localhost:3030';
+const backUrl = "http://localhost:3030";
 
 const sockets: { [key: string]: SocketIOClient.Socket } = {};
 
@@ -17,9 +17,9 @@ const useSocket = (workspace?: string): [SocketIOClient.Socket | undefined, () =
     return [undefined, disconnect];
   }
   if (!sockets[workspace]) {
-    console.log('socket connect Try');
+    console.log("socket connect Try");
     sockets[workspace] = io.connect(`${backUrl}/ws-${workspace}`, {
-      transports: ['websocket'],
+      transports: ["websocket"],
     });
   }
 

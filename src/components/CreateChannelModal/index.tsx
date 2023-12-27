@@ -1,58 +1,80 @@
+import { Button } from "@components/Button";
+import { InputText } from "@components/InputText";
+import { LabelText } from "@components/LabelText";
 import Modal from "@components/Modal";
-import useInput from "@hooks/useInput";
-import { Button, Input, Label } from "@pages/SignUp/styles";
-import fetcher from "@utils/fetcher";
-import axios from "axios";
-import { FC, FormEventHandler, useCallback } from "react";
+import { CreateChannelFailToken, CreateChannelSuccssToken } from "@const/Toast";
+import { getFetcher } from "@utils/fetcher";
+import useAxiosPost from "@utils/useAxiosPost";
+import { FC, useEffect } from "react";
+import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
+import { useQuery } from "react-query";
 import { useParams } from "react-router";
 import { toast } from "react-toastify";
-// import useSWR from 'swr';
 
 interface Props {
-  show: boolean;
-  onCloseModal: () => void;
-  setShowCreateChannelModal: (flag: boolean) => void;
+  isShow: boolean;
+  onClose: () => void;
 }
-const CreateChannelModal: FC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
-  // const params = useParams<{ workspace?: string }>();
-  // const { workspace } = params;
-  // const [newChannel, onChangeNewChannel, setNewChannel] = useInput("");
-  // const { data: userData } = useSWR<IUser | false>("/api/users", fetcher);
-  // const { mutate: revalidateChannel } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
-  // const onCreateChannel = useCallback<FormEventHandler<HTMLFormElement>>(
-  //   (e) => {
-  //     e.preventDefault();
-  //     if (!newChannel || !newChannel.trim()) {
-  //       return;
-  //     }
-  //     axios
-  //       .post(`/api/workspaces/${workspace}/channels`, {
-  //         name: newChannel,
-  //       })
-  //       .then(() => {
-  //         revalidateChannel();
-  //         setShowCreateChannelModal(false);
-  //         setNewChannel("");
-  //       })
-  //       .catch((error) => {
-  //         console.dir(error);
-  //         toast.error(error.response?.data, { position: "bottom-center" });
-  //       });
-  //   },
-  //   [newChannel, revalidateChannel, setNewChannel, setShowCreateChannelModal, workspace]
-  // );
-  // return (
-  //   <Modal show={show} onCloseModal={onCloseModal}>
-  //     <form onSubmit={onCreateChannel}>
-  //       <Label id="channel-label">
-  //         <span>채널 이름</span>
-  //         <Input id="channel" value={newChannel} onChange={onChangeNewChannel} />
-  //       </Label>
-  //       <Button>생성하기</Button>
-  //     </form>
-  //   </Modal>
-  // );
-  return <></>;
+
+interface CreateChannelDto {
+  name: string;
+}
+
+const CreateChannelModal: FC<Props> = ({ isShow, onClose }) => {
+  const { workspace } = useParams<{ workspace?: string }>();
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const { refetch: refetchChannel } = useQuery<IChannel[], Error>(
+    [workspace, "channels"],
+    () => getFetcher(`/api/workspaces/${workspace}/channels`),
+    {
+      enabled: userData !== undefined,
+    }
+  );
+
+  const { register, handleSubmit, reset } = useForm<CreateChannelDto>();
+  const postRequest = useAxiosPost();
+
+  const channelReg = register("name", {
+    required: "채널 명을 입력해야 합니다",
+    validate: {
+      hasValue: (value) => value.trim() !== "" || "채널 명을 입력해야 합니다",
+    },
+  });
+
+  const onSubmit: SubmitHandler<CreateChannelDto> = async (data) => {
+    postRequest(`/api/workspaces/${workspace}/channels`, data)
+      .then(() => {
+        toast.success(CreateChannelSuccssToken.msg, { toastId: CreateChannelSuccssToken.id });
+        reset();
+        onClose();
+      })
+      .catch((error: ApiErrorDto | undefined) => {
+        console.dir(error);
+        toast.error(CreateChannelFailToken.msg, { toastId: CreateChannelFailToken.id });
+      })
+      .finally(() => {
+        refetchChannel();
+      });
+  };
+
+  const onSubmitError: SubmitErrorHandler<CreateChannelDto> = async (error) => {
+    if (error.name) {
+      toast.error(error.name.message, { toastId: CreateChannelFailToken.id });
+      return;
+    }
+  };
+
+  return (
+    <Modal isShow={isShow} onCloseModal={onClose} style={{ width: "450px" }}>
+      <form onSubmit={handleSubmit(onSubmit, onSubmitError)}>
+        <LabelText id="channel-label" style={{ marginBottom: "16px" }}>
+          <span>채널 이름</span>
+          <InputText id="channel" {...channelReg} />
+        </LabelText>
+        <Button>생성하기</Button>
+      </form>
+    </Modal>
+  );
 };
 
 export default CreateChannelModal;

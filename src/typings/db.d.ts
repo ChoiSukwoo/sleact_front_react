@@ -19,21 +19,21 @@ interface IChannel {
 interface IChat {
   // 채널의 채팅
   id: number;
-  UserId: number;
-  User: IUser; // 보낸 사람
+  userId: number;
+  user: IUser; // 보낸 사람
   content: string;
   createdAt: Date;
-  ChannelId: number;
-  Channel: IChannel;
+  channelId: number;
+  channel: IChannel;
 }
 
 interface IDM {
   // DM 채팅
   id: number;
-  SenderId: number; // 보낸 사람 아이디
-  Sender: IUser;
-  ReceiverId: number; // 받는 사람 아이디
-  Receiver: IUser;
+  senderId: number; // 보낸 사람 아이디
+  sender: IUser;
+  receiverId: number; // 받는 사람 아이디
+  receiver: IUser;
   content: string;
   createdAt: Date;
 }

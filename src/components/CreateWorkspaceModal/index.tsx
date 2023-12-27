@@ -22,8 +22,7 @@ interface CreateWorkspaceDto {
 }
 
 const CreateWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
-  console.log("isShow : ", isShow);
-  const { refetch: userDataRefetch } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("/api/users"));
+  const { refetch: userDataRefetch } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
 
   const { register, handleSubmit, reset } = useForm<CreateWorkspaceDto>();
   const postRequest = useAxiosPost();
@@ -45,18 +44,15 @@ const CreateWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
   });
 
   const onSubmit: SubmitHandler<CreateWorkspaceDto> = async (data) => {
-    postRequest("/api/workspaces", data, { withCredentials: true })
+    postRequest("/api/workspaces", data)
       .then(() => {
         toast.success(CreateWorkspaceSuccssToken.msg, { toastId: CreateWorkspaceSuccssToken.id });
         reset();
         onClose();
       })
       .catch((error: ApiErrorDto | undefined) => {
-        if (error) {
-          toast.error(CreateWorkspaceFailToken.msg, { toastId: CreateWorkspaceFailToken.id });
-        } else {
-          toast.error(CreateWorkspaceFailToken.msg, { toastId: CreateWorkspaceFailToken.id });
-        }
+        console.dir(error);
+        toast.error(CreateWorkspaceFailToken.msg, { toastId: CreateWorkspaceFailToken.id });
       })
       .finally(() => {
         userDataRefetch();
@@ -86,7 +82,7 @@ const CreateWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
           <span>워크스페이스 url</span>
           <InputText id="workspace-url" {...urlReg} />
         </LabelText>
-        <Button type="submit">생성하기</Button>
+        <Button>생성하기</Button>
       </form>
     </Modal>
   );

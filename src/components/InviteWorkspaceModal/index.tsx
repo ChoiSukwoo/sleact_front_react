@@ -1,59 +1,82 @@
-import Modal from "@components/Modal";
-import useInput from "@hooks/useInput";
-import { Button, Input, Label } from "@pages/SignUp/styles";
-import fetcher from "@utils/fetcher";
-import axios from "axios";
-import { FC, FormEventHandler, useCallback } from "react";
+import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useParams } from "react-router";
+import { useQuery } from "react-query";
 import { toast } from "react-toastify";
-// import useSWR from 'swr';
+import { FC } from "react";
+
+import { InviteWorkspaceFailToken, InviteWorkspaceSuccessToken } from "@const/Toast";
+import { InputText } from "@components/InputText";
+import { LabelText } from "@components/LabelText";
+import { Button } from "@components/Button";
+import Modal from "@components/Modal";
+
+import useAxiosPost from "@utils/useAxiosPost";
+import { getFetcher } from "@utils/fetcher";
 
 interface Props {
-  show: boolean;
-  onCloseModal: () => void;
-  setShowInviteWorkspaceModal: (flag: boolean) => void;
+  isShow: boolean;
+  onClose: () => void;
 }
-const InviteWorkspaceModal: FC<Props> = ({ show, onCloseModal, setShowInviteWorkspaceModal }) => {
-  // const { workspace } = useParams<{ workspace: string; channel: string }>();
-  // const [newMember, onChangeNewMember, setNewMember] = useInput("");
-  // const { data: userData } = useSWR<IUser>("/api/users", fetcher);
-  // const { mutate: revalidateMember } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
 
-  // const onInviteMember = useCallback<FormEventHandler<HTMLFormElement>>(
-  //   (event) => {
-  //     event.preventDefault();
-  //     if (!newMember || !newMember.trim()) {
-  //       return;
-  //     }
-  //     axios
-  //       .post(`/api/workspaces/${workspace}/members`, {
-  //         email: newMember,
-  //       })
-  //       .then(() => {
-  //         revalidateMember();
-  //         setShowInviteWorkspaceModal(false);
-  //         setNewMember("");
-  //       })
-  //       .catch((error) => {
-  //         console.dir(error);
-  //         toast.error(error.response?.data, { position: "bottom-center" });
-  //       });
-  //   },
-  //   [newMember, workspace, revalidateMember, setShowInviteWorkspaceModal, setNewMember]
-  // );
+interface InviteWorkspaceDto {
+  email: string;
+}
 
-  // return (
-  //   <Modal show={show} onCloseModal={onCloseModal}>
-  //     <form onSubmit={onInviteMember}>
-  //       <Label id="member-label">
-  //         <span>이메일</span>
-  //         <Input id="member" type="email" value={newMember} onChange={onChangeNewMember} />
-  //       </Label>
-  //       <Button type="submit">초대하기</Button>
-  //     </form>
-  //   </Modal>
-  // );
-  return <></>;
+const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
+  const { workspace } = useParams<{ workspace?: string }>();
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const { refetch: refetchMember } = useQuery<IChannel[], Error>(
+    [workspace, "members"],
+    () => getFetcher(`/api/workspaces/${workspace}/members`),
+    {
+      enabled: userData !== undefined,
+    }
+  );
+
+  const { register, handleSubmit, reset } = useForm<InviteWorkspaceDto>();
+  const postRequest = useAxiosPost();
+
+  const memberReg = register("email", {
+    required: "초대할 유저의 email을 입력해야 합니다",
+    validate: {
+      hasValue: (value) => value.trim() !== "" || "초대할 유저의 email을 입력해야 합니다",
+    },
+  });
+
+  const onSubmit: SubmitHandler<InviteWorkspaceDto> = async (data) => {
+    postRequest(`/api/workspaces/${workspace}/members`, data)
+      .then(() => {
+        toast.success(InviteWorkspaceSuccessToken.msg, { toastId: InviteWorkspaceSuccessToken.id });
+        reset();
+        onClose();
+      })
+      .catch((error: ApiErrorDto | undefined) => {
+        console.dir(error);
+        toast.error(InviteWorkspaceFailToken.msg, { toastId: InviteWorkspaceFailToken.id });
+      })
+      .finally(() => {
+        refetchMember();
+      });
+  };
+
+  const onSubmitError: SubmitErrorHandler<InviteWorkspaceDto> = async (error) => {
+    if (error.email) {
+      toast.error(error.email.message, { toastId: InviteWorkspaceFailToken.id });
+      return;
+    }
+  };
+
+  return (
+    <Modal isShow={isShow} onCloseModal={onClose} style={{ width: "450px" }}>
+      <form onSubmit={handleSubmit(onSubmit, onSubmitError)}>
+        <LabelText id="member-label">
+          <span>이메일</span>
+          <InputText id="member" type="email" {...memberReg} />
+        </LabelText>
+        <Button type="submit">초대하기</Button>
+      </form>
+    </Modal>
+  );
 };
 
 export default InviteWorkspaceModal;

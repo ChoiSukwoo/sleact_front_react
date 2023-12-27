@@ -1,59 +1,74 @@
 import EachDM from "@components/EachDM";
+import { getFetcher } from "@utils/fetcher";
+import { FC, useCallback, useEffect, useState } from "react";
+import { useQuery } from "react-query";
+import { CollapseButton, TitleCover } from "./styles";
+import { useRecoilValue } from "recoil";
+import workspaceState from "@recoil/atom/workspace";
 import useSocket from "@hooks/useSocket";
-import { CollapseButton } from "@components/DMList/styles";
-import fetcher from "@utils/fetcher";
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router";
-// import useSWR from 'swr';
-import { CollapseTriangle } from "@components/ChannelList/styles";
 
-const DMList = () => {
-  // const { workspace } = useParams<{ workspace?: string }>();
-  // const { data: userData } = useSWR<IUser>("/api/users", fetcher, {
-  //   dedupingInterval: 2000, // 2초
-  // });
-  // const { data: memberData } = useSWR<IUserWithOnline[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
-  // const [socket] = useSocket(workspace);
-  // const [channelCollapse, setChannelCollapse] = useState(false);
-  // const [onlineList, setOnlineList] = useState<number[]>([]);
+import CollapseIcon from "@svg/expand.svg?react";
+import Loading from "./loading";
 
-  // const toggleChannelCollapse = useCallback(() => {
-  //   setChannelCollapse((prev) => !prev);
-  // }, []);
+interface Props {
+  DMData?: IDM[];
+  userData?: IUser;
+}
 
-  // useEffect(() => {
-  //   setOnlineList([]);
-  // }, [workspace]);
+const DMList: FC<Props> = () => {
+  const workspace = useRecoilValue(workspaceState);
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const { data: memberData } = useQuery<IUser[], Error>(
+    [workspace, "members"],
+    () => getFetcher(`/api/workspaces/${workspace}/members`),
+    {
+      enabled: userData !== undefined && workspace !== undefined,
+    }
+  );
+  const [socket] = useSocket(workspace);
+  const [onlineList, setOnlineList] = useState<number[]>([]);
+  const [isDown, setIsDown] = useState(false);
 
-  // useEffect(() => {
-  //   socket?.on("onlineList", (data: number[]) => {
-  //     setOnlineList(data);
-  //   });
-  //   console.log("socket on dm", socket?.hasListeners("dm"), socket);
-  //   return () => {
-  //     console.log("socket off dm", socket?.hasListeners("dm"));
-  //     socket?.off("onlineList");
-  //   };
-  // }, [socket]);
+  const toggleChannelCollapse = useCallback(() => {
+    setIsDown((prev) => !prev);
+  }, []);
 
-  // return (
-  //   <>
-  //     <h2>
-  //       <CollapseButton collapse={channelCollapse} onClick={toggleChannelCollapse}>
-  //         <CollapseTriangle isDown={!channelCollapse} />
-  //       </CollapseButton>
-  //       <span>Direct Messages</span>
-  //     </h2>
-  //     <div>
-  //       {!channelCollapse &&
-  //         memberData?.map((member) => {
-  //           const isOnline = onlineList.includes(member.id);
-  //           return <EachDM key={member.id} member={member} isOnline={isOnline} />;
-  //         })}
-  //     </div>
-  //   </>
-  // );
-  return <></>;
+  useEffect(() => {
+    setOnlineList([]);
+  }, [workspace]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+    socket.on("onlineList", (data: number[]) => {
+      setOnlineList(data);
+    });
+    return () => {
+      socket.off("onlineList");
+    };
+  }, [socket]);
+
+  return !memberData ? (
+    <Loading />
+  ) : (
+    <>
+      <TitleCover onClick={toggleChannelCollapse}>
+        <CollapseButton isDown={isDown} style={{ marginRight: "5px" }}>
+          <CollapseIcon style={{ flexShrink: 0 }} />
+        </CollapseButton>
+        <h2>Direct Messages</h2>
+      </TitleCover>
+
+      <div>
+        {!isDown &&
+          memberData?.map((member) => {
+            const isOnline = onlineList.includes(member.id);
+            return <EachDM key={member.id} member={member} isOnline={isOnline} />;
+          })}
+      </div>
+    </>
+  );
 };
 
 export default DMList;

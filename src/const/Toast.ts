@@ -27,3 +27,23 @@ export const CreateWorkspaceFailToken: ToastTokenDto = {
   id: "CreateWorkspaceFailToken",
   msg: "워크스페이스 생성에 실패하엿습니다.",
 };
+
+export const CreateChannelSuccssToken: ToastTokenDto = {
+  id: "CreateChannelSuccssToken",
+  msg: "채널 생성에 성공했습니다.",
+};
+
+export const CreateChannelFailToken: ToastTokenDto = {
+  id: "CreateChannelFailToken",
+  msg: "채널 생성에 실패하엿습니다.",
+};
+
+export const InviteWorkspaceSuccessToken: ToastTokenDto = {
+  id: "InviteWorkspaceSuccessToken",
+  msg: "해당 유저를 워크스페이스에 성공적으로 초대했습니다.",
+};
+
+export const InviteWorkspaceFailToken: ToastTokenDto = {
+  id: "InviteWorkspaceFailToken",
+  msg: "해당 유저를 워크스페이스에 초대하는데 실패 했습니다.",
+};

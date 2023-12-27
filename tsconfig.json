@@ -32,6 +32,7 @@
       "@typings/*": ["typings/*"],
       "@const/*": ["const/*"],
       "@styles/*": ["styles/*"],
+      "@recoil/*": ["recoil/*"],
       "@svg/*": ["assets/svg/*"],
       "@img/*": ["assets/img/*"],
       "@assets/*": ["assets/*"]

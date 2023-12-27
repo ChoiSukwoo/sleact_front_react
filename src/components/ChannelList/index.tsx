@@ -1,42 +1,51 @@
-import { CollapseButton } from "@components/DMList/styles";
 import EachChannel from "@components/EachChannel";
-import fetcher from "@utils/fetcher";
+import { getFetcher } from "@utils/fetcher";
 import { FC, useCallback, useState } from "react";
-import { useParams } from "react-router";
-// import useSWR from "swr";
-import { CollapseTriangle } from "./styles";
-interface Props {
-  channelData?: IChannel[];
-  userData?: IUser;
-}
+import { useQuery } from "react-query";
+import { CollapseButton, TitleCover } from "./styles";
+import { useRecoilValue } from "recoil";
+import workspaceState from "@recoil/atom/workspace";
+
+import CollapseIcon from "@svg/expand.svg?react";
+import Loading from "./loading";
+
+interface Props {}
 
 const ChannelList: FC<Props> = () => {
-  // const { workspace } = useParams<{ workspace?: string }>();
-  // const [channelCollapse, setChannelCollapse] = useState(false);
-  // const { data: userData } = useSWR<IUser>("/api/users", fetcher, {
-  //   dedupingInterval: 2000, // 2초
-  // });
-  // const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
-  // const toggleChannelCollapse = useCallback(() => {
-  //   setChannelCollapse((prev) => !prev);
-  // }, []);
-  // return (
-  //   <>
-  //     <h2>
-  //       <CollapseButton collapse={channelCollapse} onClick={toggleChannelCollapse}>
-  //         <CollapseTriangle isDown={!channelCollapse} />
-  //       </CollapseButton>
-  //       <span>Channels</span>
-  //     </h2>
-  //     <div>
-  //       {!channelCollapse &&
-  //         channelData?.map((channel) => {
-  //           return <EachChannel key={channel.id} channel={channel} />;
-  //         })}
-  //     </div>
-  //   </>
-  // );
-  return <></>;
+  const workspace = useRecoilValue(workspaceState);
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const { data: channelData } = useQuery<IChannel[], Error>(
+    [workspace, "channels"],
+    () => getFetcher(`/api/workspaces/${workspace}/channels`),
+    {
+      enabled: userData !== undefined,
+    }
+  );
+
+  const [isDown, setIsDown] = useState(false);
+
+  const toggleChannelCollapse = useCallback(() => {
+    setIsDown((prev) => !prev);
+  }, []);
+
+  return !channelData ? (
+    <Loading />
+  ) : (
+    <>
+      <TitleCover onClick={toggleChannelCollapse}>
+        <CollapseButton isDown={isDown} style={{ marginRight: "5px" }}>
+          <CollapseIcon style={{ flexShrink: 0 }} />
+        </CollapseButton>
+        <h2>Channels</h2>
+      </TitleCover>
+      <div>
+        {!isDown &&
+          channelData?.map((channel) => {
+            return <EachChannel key={channel.id} channel={channel} />;
+          })}
+      </div>
+    </>
+  );
 };
 
 export default ChannelList;

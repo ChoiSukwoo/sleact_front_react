@@ -63,7 +63,6 @@ const SignUp = () => {
 
   const onSubmit: SubmitHandler<SignUpFromEntity> = async (data) => {
     const dtoData = EntityToRegistUserDTO(data);
-    console.log(dtoData);
     setSignUpError([]);
 
     postRequest("/api/users", dtoData, { withCredentials: true })

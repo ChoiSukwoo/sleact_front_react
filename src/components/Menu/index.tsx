@@ -1,34 +1,33 @@
-import { CreateMenu, CloseModalButton } from "@components/Menu/styles";
+import { MenuBackground, CloseModalButton, MenuContent } from "./styles";
 import { CSSProperties, FC, MouseEventHandler, PropsWithChildren, useCallback } from "react";
+
+import CloseIcon from "@svg/clear.svg?react";
 
 interface Props {
   show: boolean;
   onCloseModal: () => void;
-  style: CSSProperties;
-  closeButton?: boolean;
+  style?: CSSProperties;
 }
 
-const Menu: FC<PropsWithChildren<Props>> = ({ closeButton, style, show, children, onCloseModal }) => {
-  // const stopPropagation = useCallback<MouseEventHandler<HTMLDivElement>>((event) => {
-  //   event.stopPropagation();
-  // }, []);
+const Menu: FC<PropsWithChildren<Props>> = ({ style, show, children, onCloseModal }) => {
+  const stopPropagation = useCallback<MouseEventHandler<HTMLDivElement>>((event) => {
+    event.stopPropagation();
+  }, []);
 
-  // if (!show) {
-  //   return null;
-  // }
-  // return (
-  //   <CreateMenu onClick={onCloseModal}>
-  //     <div onClick={stopPropagation} style={style}>
-  //       {closeButton && <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>}
-  //       {children}
-  //     </div>
-  //   </CreateMenu>
-  // );
-  return <></>;
-};
-
-Menu.defaultProps = {
-  closeButton: true,
+  if (!show) {
+    return null;
+  }
+  return (
+    <>
+      <MenuBackground onClick={onCloseModal} />
+      <MenuContent onClick={stopPropagation} style={style}>
+        <CloseModalButton onClick={onCloseModal}>
+          <CloseIcon />
+        </CloseModalButton>{" "}
+        {children}
+      </MenuContent>
+    </>
+  );
 };
 
 export default Menu;

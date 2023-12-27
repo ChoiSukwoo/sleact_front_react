@@ -1,38 +1,71 @@
-import fetcher from "@utils/fetcher";
-import { useEffect, VFC } from "react";
-import { useParams } from "react-router";
-import { NavLink, useLocation } from "react-router-dom";
-// import useSWR from "swr";
+import workspaceState from "@recoil/atom/workspace";
+import { getFetcher } from "@utils/fetcher";
+import { FC, memo, useCallback, useEffect } from "react";
+import { useQuery } from "react-query";
+import { useRecoilValue } from "recoil";
+import { ChannelLink } from "./styles";
+import useSocket from "@hooks/useSocket";
+import channelTypeState from "@recoil/atom/channelType";
+import Laoding from "./loading";
 
 interface Props {
   channel: IChannel;
 }
-const EachChannel: VFC<Props> = ({ channel }) => {
-  // const { workspace } = useParams<{ workspace?: string }>();
-  // const location = useLocation();
-  // const { data: userData } = useSWR<IUser>("/api/users", fetcher, {
-  //   dedupingInterval: 2000, // 2초
-  // });
-  // const date = localStorage.getItem(`${workspace}-${channel.name}`) || 0;
-  // const { data: count, mutate } = useSWR<number>(
-  //   userData ? `/api/workspaces/${workspace}/channels/${channel.name}/unreads?after=${date}` : null,
-  //   fetcher
-  // );
+const EachChannel: FC<Props> = ({ channel }) => {
+  const workspace = useRecoilValue(workspaceState);
+  const channelType = useRecoilValue(channelTypeState);
+  const [socket] = useSocket(workspace);
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {
+    refetchOnMount: false,
+  });
 
-  // useEffect(() => {
-  //   if (location.pathname === `/workspace/${workspace}/channel/${channel.name}`) {
-  //     mutate(0);
-  //   }
-  // }, [mutate, location.pathname, workspace, channel]);
+  const { data: lastRead } = useQuery<LastReadType>(
+    [workspace, channel.name, "lastread"],
+    () => getFetcher(`/api/users/workspace/${workspace}/channel/${channel.id}/lastread`),
+    {
+      enabled: userData !== undefined && workspace !== undefined,
+    }
+  );
 
-  // return (
-  //   <NavLink key={channel.name} to={`/workspace/${workspace}/channel/${channel.name}`}>
-  //     <span className={count !== undefined && count > 0 ? "bold" : undefined}># {channel.name}</span>
-  //     {count !== undefined && count > 0 && <span className="count">{count}</span>}
-  //   </NavLink>
-  // );
+  const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
+    [workspace, channel.name, "unreads"],
+    () => getFetcher(`/api/workspaces/${workspace}/channels/${channel.name}/unreads?after=${lastRead?.time}`),
+    {
+      enabled: lastRead !== undefined && workspace !== undefined,
+    }
+  );
 
-  return <></>;
+  const onMessage = useCallback(
+    (data: IChat) => {
+      //현재 접속 채널이 아님
+      if (channelType.type === "channel" && channelType.id === channel.id) {
+        return;
+      }
+      //메시지를 전달받을ID와 채널ID랑 일치하지 않음
+      if (data.channelId !== channel.id) {
+        return;
+      }
+      unReadCntRefetch();
+    },
+    [channel]
+  );
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+    socket.on("message", onMessage);
+    return () => {
+      socket.off("message", onMessage);
+    };
+  }, [socket, onMessage]);
+
+  return (
+    <ChannelLink key={channel.id} to={`/workspace/${workspace}/channel/${channel.name}`}>
+      <span># {channel.name}</span>
+      {unReadCnt && unReadCnt > 0 ? <span className="count">{unReadCnt}</span> : <></>}
+    </ChannelLink>
+  );
 };
 
-export default EachChannel;
+export default memo(EachChannel);
