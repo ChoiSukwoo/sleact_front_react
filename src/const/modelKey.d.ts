@@ -1,0 +1,1 @@
+type modalKey = "aa" | "bbb";

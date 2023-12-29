@@ -1,9 +1,9 @@
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
-const makeSection = (chatList: (IDM | IChat)[]) => {
+const makeSection = (chatList: (IDM | IChat)[]): MakeSectionResult => {
   const section: { [key: string]: (IDM | IChat)[] } = {};
   chatList.forEach((chat: IDM | IChat) => {
-    const month = dayjs(chat.createdAt).format('YYYY-MM-DD');
+    const month = dayjs(chat.createdAt).format("YYYY-MM-DD");
     if (!section[month]) {
       section[month] = [];
     }

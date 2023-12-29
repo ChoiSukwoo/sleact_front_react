@@ -13,13 +13,13 @@ interface Props {
 }
 const EachChannel: FC<Props> = ({ channel }) => {
   const workspace = useRecoilValue(workspaceState);
-  const channelType = useRecoilValue(channelTypeState);
+  const channelState = useRecoilValue(channelTypeState);
   const [socket] = useSocket(workspace);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {
     refetchOnMount: false,
   });
 
-  const { data: lastRead } = useQuery<LastReadType>(
+  const { data: lastRead, refetch: lastReadRefetch } = useQuery<LastReadType>(
     [workspace, channel.name, "lastread"],
     () => getFetcher(`/api/users/workspace/${workspace}/channel/${channel.id}/lastread`),
     {
@@ -38,7 +38,7 @@ const EachChannel: FC<Props> = ({ channel }) => {
   const onMessage = useCallback(
     (data: IChat) => {
       //현재 접속 채널이 아님
-      if (channelType.type === "channel" && channelType.id === channel.id) {
+      if (channelState.type === "channel" && channelState.id === channel.id) {
         return;
       }
       //메시지를 전달받을ID와 채널ID랑 일치하지 않음
@@ -47,7 +47,7 @@ const EachChannel: FC<Props> = ({ channel }) => {
       }
       unReadCntRefetch();
     },
-    [channel]
+    [channel, channelState]
   );
 
   useEffect(() => {
@@ -59,6 +59,12 @@ const EachChannel: FC<Props> = ({ channel }) => {
       socket.off("message", onMessage);
     };
   }, [socket, onMessage]);
+
+  useEffect(() => {
+    if (channelState.type === "channel" && channelState.id === channel.id) {
+      lastReadRefetch();
+    }
+  }, [channelState, channel]);
 
   return (
     <ChannelLink key={channel.id} to={`/workspace/${workspace}/channel/${channel.name}`}>

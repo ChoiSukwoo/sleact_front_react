@@ -1,94 +1,59 @@
-import styled from '@emotion/styled';
-import { MentionsInput } from 'react-mentions';
+import styled from "@emotion/styled";
+import { Util } from "Styles";
 
-export const ChatArea = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 20px;
-  padding-top: 0;
-`;
+interface SendProps {
+  isEnable: boolean;
+}
 
-export const Form = styled.form`
-  color: rgb(29, 28, 29);
-  font-size: 15px;
-  width: 100%;
-  border-radius: 4px;
-  border: 1px solid rgb(29, 28, 29);
-`;
+export const ChatArea = styled.div({
+  display: "flex",
+  width: "100%",
+  padding: "20px",
+  paddingTop: "0",
+});
 
-export const MentionsTextarea = styled(MentionsInput)`
-  font-family: Slack-Lato, appleLogo, sans-serif;
-  font-size: 15px;
-  padding: 8px 9px;
+export const Form = styled.form({
+  color: "rgb(29, 28, 29)",
+  fontSize: "15px",
+  width: "100%",
+  borderRadius: "4px",
+  border: "1px solid rgb(29, 28, 29)",
+});
 
-  & strong {
-    background: skyblue;
-  }
+export const Toolbox = styled.div({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  width: "100%",
+  height: "41px",
+  background: "rgb(248, 248, 248)",
+  borderTop: "1px solid rgb(221, 221, 221)",
+  borderBottomLeftRadius: "4px",
+  borderBottomRightRadius: "4px",
+});
 
-  & textarea {
-    height: 44px;
-    padding: 9px 10px !important;
-    outline: none !important;
-    border-radius: 4px !important;
-    resize: none !important;
-    line-height: 22px;
-    border: none;
-  }
+export const SendButton = styled.button({
+  ...Util.ButtonStyleRemove,
+  ...Util.FlexCenter,
+  width: "36px",
+  height: "28px",
+  borderRadius: "3px",
+  marginRight: "10px",
 
-  & ul {
-    border: 1px solid lightgray;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 9px 10px;
-    background: white;
-    border-radius: 4px;
-    width: 150px;
-  }
-`;
+  backgroundColor: "#148567",
+  color: "#ffffff",
 
-export const Toolbox = styled.div`
-  position: relative;
-  background: rgb(248, 248, 248);
-  height: 41px;
-  display: flex;
-  border-top: 1px solid rgb(221, 221, 221);
-  align-items: center;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-`;
+  "&:disabled": {
+    backgroundColor: "#f8f8f8",
+    color: "#57595c",
+  },
+});
 
-export const SendButton = styled.button`
-  position: absolute;
-  right: 5px;
-  top: 5px;
-`;
-
-export const EachMention = styled.button<{ focus: boolean }>`
-  padding: 4px 20px;
-  background: transparent;
-  border: none;
-  display: flex;
-  align-items: center;
-  color: rgb(28, 29, 28);
-  width: 100%;
-
-  & img {
-    margin-right: 5px;
-  }
-
-  ${({ focus }) =>
-    focus &&
-    `
-    background: #1264a3;
-    color: white;
-  `};
-`;
-
-export const SendTriangle = styled.div<{ isEnable: boolean }>(({ isEnable }) => ({
-  width: '0',
-  height: '0',
-  borderLeft: '12px solid transparent',
-  borderRight: '12px solid transparent',
-  borderTop: `24px solid ${isEnable ? 'green' : 'gray'}`, // 템플릿 리터럴 사용
-  transform: 'rotate(270deg)',
+export const SendTriangle = styled.div<SendProps>(({ isEnable }) => ({
+  width: "0",
+  height: "0",
+  borderLeft: "12px solid transparent",
+  borderRight: "12px solid transparent",
+  borderTop: `24px solid ${isEnable ? "green" : "gray"}`,
+  transform: "rotate(270deg)",
 }));

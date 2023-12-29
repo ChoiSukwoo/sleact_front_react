@@ -1,13 +1,11 @@
 import { FC } from "react";
 import { ChannelLoading, ChannelLoadingCover } from "./styles";
 
-interface Props {
-  key: number;
-}
+interface Props {}
 
-const Laoding: FC<Props> = ({ key }) => {
+const Laoding: FC<Props> = () => {
   return (
-    <ChannelLoadingCover key={`each_channel_loading_${key}`}>
+    <ChannelLoadingCover>
       <ChannelLoading />
     </ChannelLoadingCover>
   );

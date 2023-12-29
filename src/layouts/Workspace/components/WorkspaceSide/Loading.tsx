@@ -5,7 +5,7 @@ const Loading: FC = () => {
   return (
     <Workspaces>
       {[...Array(3)].map((_, index) => {
-        return <LodingButton key={index} />;
+        return <LodingButton key={`Loding_Button_${index}`} />;
       })}
       <AddButton>+</AddButton>
     </Workspaces>

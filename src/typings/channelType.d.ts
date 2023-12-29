@@ -1,4 +1,4 @@
 type ChannelType = {
   type: "channel" | "dm" | undefined;
-  id: number | undefined;
+  id: number | string | undefined;
 };

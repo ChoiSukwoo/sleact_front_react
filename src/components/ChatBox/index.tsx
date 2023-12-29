@@ -1,83 +1,82 @@
-import gravatar from "gravatar";
-// import autosize from 'autosize';
-import React, { FC, KeyboardEventHandler, useCallback, useEffect, useRef } from "react";
-// import { Mention, SuggestionDataItem } from "react-mentions";
+import autosize from "autosize";
+import { FC, useCallback, useEffect, useRef } from "react";
 
-import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox, EachMention, SendTriangle } from "@components/ChatBox/styles";
+import TextareaBox from "@components/MentionTextareaBox";
+
+import { ChatArea, Form, SendButton, Toolbox } from "@components/ChatBox/styles";
+import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
+
+import SendMessageIcon from "@svg/sendMessage.svg?react";
+import { useRecoilValue } from "recoil";
+import channelTypeState from "@recoil/atom/channelType";
+
+interface ChatForm {
+  chat: string;
+}
 
 interface Props {
-  onSubmitForm: (e: any) => void;
-  chat?: string;
-  onChangeChat: (e: any) => void;
-  placeholder: string;
-  otherData?: IUser[];
+  onSubmitForm: (chat: string) => void;
 }
-const ChatBox: FC<Props> = ({ onSubmitForm, chat, onChangeChat, placeholder, otherData: data }) => {
-  // const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // useEffect(() => {
-  //   if (textareaRef.current) {
-  //     autosize(textareaRef.current);
-  //   }
-  // }, []);
-  // const onKeydownChat = useCallback<KeyboardEventHandler>(
-  //   (e) => {
-  //     if (!e.nativeEvent.isComposing && e.key === "Enter") {
-  //       if (!e.shiftKey) {
-  //         e.preventDefault();
-  //         onSubmitForm(e);
-  //       }
-  //     }
-  //   },
-  //   [onSubmitForm]
-  // );
-  // const renderUserSuggestion: (
-  //   suggestion: SuggestionDataItem,
-  //   search: string,
-  //   highlightedDisplay: React.ReactNode,
-  //   index: number,
-  //   focused: boolean
-  // ) => React.ReactNode = useCallback(
-  //   (member, search, highlightedDisplay, index, focus) => {
-  //     if (!data) {
-  //       return null;
-  //     }
-  //     return (
-  //       <EachMention focus={focus}>
-  //         <img src={gravatar.url(data[index].email, { s: "20px", d: "retro" })} alt={data[index].nickname} />
-  //         <span>{highlightedDisplay}</span>
-  //       </EachMention>
-  //     );
-  //   },
-  //   [data]
-  // );
-  // return (
-  //   <ChatArea>
-  //     <Form onSubmit={onSubmitForm}>
-  //       <MentionsTextarea
-  //         id="editor-chat"
-  //         value={chat}
-  //         onChange={onChangeChat}
-  //         onKeyPress={onKeydownChat}
-  //         placeholder={placeholder}
-  //         inputRef={textareaRef}
-  //         forceSuggestionsAboveCursor
-  //       >
-  //         <Mention
-  //           appendSpaceOnAdd
-  //           trigger="@"
-  //           data={data?.map((v) => ({ id: v.id, display: v.nickname })) || []}
-  //           renderSuggestion={renderUserSuggestion}
-  //         />
-  //       </MentionsTextarea>
-  //       <Toolbox>
-  //         <SendButton data-qa="texty_send_button" aria-label="Send message" data-sk="tooltip_parent" type="submit" disabled={!chat?.trim()}>
-  //           <SendTriangle isEnable={!!chat?.trim()} />
-  //         </SendButton>
-  //       </Toolbox>
-  //     </Form>
-  //   </ChatArea>
-  // );
-  return <></>;
+
+const ChatBox: FC<Props> = ({ onSubmitForm }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const channel = useRecoilValue(channelTypeState);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      autosize(textareaRef.current);
+    }
+  }, []);
+
+  const method = useForm<ChatForm>({
+    defaultValues: {
+      chat: "",
+    },
+  });
+
+  const validationRules: IFormRules<ChatForm> = {
+    chat: {
+      required: true,
+      maxLength: {
+        value: 1000,
+        message: "1000 이상 입력할수 없습니다.",
+      },
+    },
+  };
+
+  const onSubmit = useCallback<SubmitHandler<ChatForm>>(
+    async (data) => {
+      onSubmitForm(data.chat);
+      method.resetField("chat");
+    },
+    [method, onSubmitForm]
+  );
+
+  const onError = useCallback<SubmitErrorHandler<ChatForm>>((error) => {
+    console.log(error);
+  }, []);
+
+  return (
+    <FormProvider {...method}>
+      <ChatArea>
+        <Form onSubmit={method.handleSubmit(onSubmit, onError)}>
+          <TextareaBox
+            onSubmitForm={method.handleSubmit(onSubmit, onError)}
+            name={"chat"}
+            rule={validationRules.chat}
+            placeholder={`Message #${channel.type === "channel" && channel.id}`}
+            maxLength={1000}
+          />
+          <Toolbox>
+            <SendButton type="submit" disabled={!method.watch("chat").trim()}>
+              <SendMessageIcon />
+            </SendButton>
+          </Toolbox>
+        </Form>
+      </ChatArea>
+    </FormProvider>
+  );
 };
 
 export default ChatBox;

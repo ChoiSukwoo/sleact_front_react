@@ -12,7 +12,7 @@ const Loading = () => {
         <h2>Channels</h2>
       </TitleCover>
       {[...Array(3)].map((_, index) => {
-        return <EachChannelLoad key={index} />;
+        return <EachChannelLoad key={`each_channel_load_${index}`} />;
       })}
     </>
   );

@@ -12,7 +12,7 @@ const Loading = () => {
         <h2>Direct Messages</h2>
       </TitleCover>
       {[...Array(3)].map((_, index) => {
-        return <EachDmLoad key={index} />;
+        return <EachDmLoad key={`each_dm_loading_${index}`} />;
       })}
     </>
   );

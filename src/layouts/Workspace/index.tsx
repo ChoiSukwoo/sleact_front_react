@@ -23,7 +23,7 @@ import Header from "./components/Header";
 import { getFetcher } from "@utils/fetcher";
 import useSocket from "@hooks/useSocket";
 import ChannelSide from "./components/ChannelSide";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import workspaceState from "@recoil/atom/workspace";
 
 const Workspace: FC = () => {
@@ -37,7 +37,7 @@ const Workspace: FC = () => {
     }
   );
 
-  const [, setWorkspace] = useRecoilState(workspaceState);
+  const setWorkspace = useSetRecoilState(workspaceState);
 
   const [socket, disconnectSocket] = useSocket(workspace);
   const [isCreateWorkspaceModal, setCreateWorkspaceModal] = useState(false);
