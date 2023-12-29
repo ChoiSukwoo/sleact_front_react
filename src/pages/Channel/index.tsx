@@ -23,7 +23,7 @@ const Channel = () => {
   const setChannelType = useSetRecoilState(channelTypeState);
   const [socket] = useSocket(workspace);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
-  const { data: channelData, refetch: channelDataRefetch } = useQuery<IChannel, Error>(
+  const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}`),
     {

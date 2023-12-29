@@ -1,6 +1,6 @@
 import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
-import { FC, memo, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useRecoilValue } from "recoil";
 import { DMLink, IsOnlineChecker } from "./styles";

@@ -5,7 +5,7 @@ import Modal from "@components/Modal";
 import { CreateChannelFailToken, CreateChannelSuccssToken } from "@const/Toast";
 import { getFetcher } from "@utils/fetcher";
 import useAxiosPost from "@utils/useAxiosPost";
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useQuery } from "react-query";
 import { useParams } from "react-router";

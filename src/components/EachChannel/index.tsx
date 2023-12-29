@@ -6,7 +6,6 @@ import { useRecoilValue } from "recoil";
 import { ChannelLink } from "./styles";
 import useSocket from "@hooks/useSocket";
 import channelTypeState from "@recoil/atom/channelType";
-import Laoding from "./loading";
 
 interface Props {
   channel: IChannel;

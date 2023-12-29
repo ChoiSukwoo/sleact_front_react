@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { ReactElement } from "react";
 
 import { getFetcher } from "@utils/fetcher";
-import LoginRouter from "./loginRouter";
+import LoginRouter from "./LoginRouter";
 import UnLoginRouter from "./unLoginRouter";
 
 const LogIn = loadable(() => import("@pages/LogIn"));

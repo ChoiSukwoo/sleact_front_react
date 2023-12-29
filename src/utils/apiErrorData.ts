@@ -8,10 +8,10 @@ export const apiError = (error: AxiosError): string[] => {
   if (typeof error.response.data !== "string") {
     const apiError = error.response.data as ApiErrorDto;
 
-    if (typeof apiError.data !== "string") {
-      return apiError.data;
+    if (typeof apiError.message !== "string") {
+      return apiError.message;
     } else {
-      return [apiError.data];
+      return [apiError.message];
     }
   } else {
     return [error.response.data];

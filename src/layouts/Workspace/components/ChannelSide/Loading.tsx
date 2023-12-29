@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Channels, LoadWorkspaceName, MenuScroll, WorkspaceModal, WorkspaceName } from "./style";
+import { Channels, LoadWorkspaceName, MenuScroll, WorkspaceName } from "./style";
 import ChannelList from "@components/ChannelList";
 import DMList from "@components/DMList";
 
