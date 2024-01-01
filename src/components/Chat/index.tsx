@@ -10,7 +10,8 @@ interface Props {
   data: IDM | IChat;
 }
 
-const BACK_URL = "http://localhost:3030";
+// const BACK_URL = "http://localhost:3030";
+const BACK_URL = "https://api.slack.sukwoo.kr/api";
 
 const Chat: FC<Props> = memo(({ data }) => {
   const { workspace } = useParams<{ workspace: string; channel: string }>();
