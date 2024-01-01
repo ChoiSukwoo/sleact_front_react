@@ -3,7 +3,7 @@ import gravatar from "gravatar";
 import { HeaderStyle, ProfileImg, ProfileModal, LogOutButton } from "./styles";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
-import { Dispatch, FC, useCallback, useEffect } from "react";
+import { Dispatch, FC, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import useAxiosPost from "@utils/useAxiosPost";

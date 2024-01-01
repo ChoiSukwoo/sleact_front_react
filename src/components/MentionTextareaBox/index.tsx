@@ -84,7 +84,7 @@ const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLeng
       rules={rule}
       render={({ field }) => {
         const handleOnChange = (event: any, newValue: string) => {
-          console.log;
+          console.log(event);
           let value = newValue;
           if (maxLength && value.length > maxLength) {
             value = value.slice(0, maxLength); // 값 자르기

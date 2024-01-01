@@ -25,7 +25,7 @@ const SignUp = () => {
     register,
     handleSubmit,
     getValues,
-    formState: { errors },
+    formState: {},
   } = useForm<SignUpFromEntity>();
 
   const emailReg = register("email", {
