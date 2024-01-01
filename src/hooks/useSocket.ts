@@ -1,13 +1,14 @@
-import io from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { useCallback } from "react";
 
-const backUrl = "http://localhost:3030";
+const backUrl = "https://api.slack.sukwoo.kr";
 
-const sockets: { [key: string]: SocketIOClient.Socket } = {};
+const sockets: { [key: string]: Socket } = {};
 
-const useSocket = (workspace?: string): [SocketIOClient.Socket | undefined, () => void] => {
+const useSocket = (workspace?: string): [Socket | undefined, () => void] => {
   const disconnect = useCallback(() => {
-    if (workspace) {
+    if (workspace && sockets[workspace]) {
+      console.log("소켓 연결 끊음");
       sockets[workspace].disconnect();
       delete sockets[workspace];
     }
@@ -16,13 +17,18 @@ const useSocket = (workspace?: string): [SocketIOClient.Socket | undefined, () =
   if (!workspace) {
     return [undefined, disconnect];
   }
+
   if (!sockets[workspace]) {
-    console.log("socket connect Try");
-    sockets[workspace] = io.connect(`${backUrl}/ws-${workspace}`, {
+    sockets[workspace] = io(`${backUrl}/ws-${workspace}`, {
       transports: ["websocket"],
     });
-  }
 
+    console.info("create socket", workspace, sockets[workspace]);
+    sockets[workspace].on("connect_error", (err) => {
+      console.error(err);
+      console.log(`connect_error due to ${err.message}`);
+    });
+  }
   return [sockets[workspace], disconnect];
 };
 
