@@ -1,14 +1,13 @@
 import { io, Socket } from "socket.io-client";
 import { useCallback } from "react";
 
-const backUrl = "https://api.slack.sukwoo.kr";
+const BACK_URL = import.meta.env.MODE === "production" ? "https://api.slack.sukwoo.kr" : "http://localhost:3030";
 
 const sockets: { [key: string]: Socket } = {};
 
 const useSocket = (workspace?: string): [Socket | undefined, () => void] => {
   const disconnect = useCallback(() => {
     if (workspace && sockets[workspace]) {
-      console.log("소켓 연결 끊음");
       sockets[workspace].disconnect();
       delete sockets[workspace];
     }
@@ -19,13 +18,12 @@ const useSocket = (workspace?: string): [Socket | undefined, () => void] => {
   }
 
   if (!sockets[workspace]) {
-    sockets[workspace] = io(`${backUrl}/ws-${workspace}`, {
+    sockets[workspace] = io(`${BACK_URL}/ws-${workspace}`, {
+      withCredentials: true,
       transports: ["websocket"],
     });
 
-    console.info("create socket", workspace, sockets[workspace]);
     sockets[workspace].on("connect_error", (err) => {
-      console.error(err);
       console.log(`connect_error due to ${err.message}`);
     });
   }
