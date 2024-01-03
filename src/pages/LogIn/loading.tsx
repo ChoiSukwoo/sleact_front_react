@@ -6,7 +6,7 @@ import { Button } from "@components/Button";
 const Loading: FC = () => {
   return (
     <>
-      <Header>Sleact</Header>
+      <Header>slack</Header>
       <Form as={"div"}>
         <div style={{ marginBottom: "20px" }}>
           <h6 style={{ marginBottom: "8px" }}>이메일 주소</h6>

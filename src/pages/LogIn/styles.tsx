@@ -16,7 +16,7 @@ export const Form = styled.form({
 
 export const Error = styled.div({
   ...Util.Error,
-  marginBottom: "16px",
+  margin: "8px 0 16px",
 });
 
 export const LinkContainer = styled.p({
@@ -25,7 +25,7 @@ export const LinkContainer = styled.p({
   margin: "0 auto 8px",
   width: "400px",
   maxWidth: "400px",
-  a: {
+  "& a": {
     color: "#1264a3",
     textDecoration: "none",
     fontWeight: 700,

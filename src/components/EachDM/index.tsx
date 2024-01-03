@@ -24,7 +24,7 @@ const EachDM: FC<Props> = ({ member, isOnline }) => {
     [workspace, member.id, "lastread"],
     () => getFetcher(`/api/users/workspace/${workspace}/dm/${member.id}/lastread`),
     {
-      enabled: userData !== undefined && workspace !== undefined,
+      enabled: userData !== undefined && workspace !== undefined && member.id !== undefined,
     }
   );
 
@@ -32,7 +32,8 @@ const EachDM: FC<Props> = ({ member, isOnline }) => {
     [workspace, member.id, "unreads"],
     () => getFetcher(`/api/workspaces/${workspace}/dms/${member.id}/unreads?after=${lastRead?.time}`),
     {
-      enabled: lastRead !== undefined && workspace !== undefined,
+      enabled:
+        lastRead !== undefined && workspace !== undefined && member.id !== undefined && lastRead.time !== undefined,
     }
   );
 

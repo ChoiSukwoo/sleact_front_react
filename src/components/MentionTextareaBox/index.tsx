@@ -29,7 +29,8 @@ const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLeng
     ["channelMembers", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel.id}/members`),
     {
-      enabled: workspace !== undefined && channel !== undefined && channel.type === "channel",
+      enabled:
+        workspace !== undefined && channel !== undefined && channel.type === "channel" && channel.id !== undefined,
     }
   );
 
@@ -52,9 +53,7 @@ const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLeng
     index: number,
     focused: boolean
   ) => React.ReactNode = useCallback(
-    (member, search, highlightedDisplay, index, focus) => {
-      console.log(member);
-      console.log(search);
+    (_member, _search, highlightedDisplay, index, focus) => {
       if (!channelMembers) {
         return null;
       }
@@ -83,8 +82,7 @@ const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLeng
       control={control}
       rules={rule}
       render={({ field }) => {
-        const handleOnChange = (event: any, newValue: string) => {
-          console.log(event);
+        const handleOnChange = (_event: any, newValue: string) => {
           let value = newValue;
           if (maxLength && value.length > maxLength) {
             value = value.slice(0, maxLength); // 값 자르기

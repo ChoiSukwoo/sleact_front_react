@@ -30,7 +30,7 @@ const EachChannel: FC<Props> = ({ channel }) => {
     [workspace, channel.name, "unreads"],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel.name}/unreads?after=${lastRead?.time}`),
     {
-      enabled: lastRead !== undefined && workspace !== undefined,
+      enabled: lastRead !== undefined && workspace !== undefined && channel.name !== undefined,
     }
   );
 

@@ -29,7 +29,7 @@ const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
     [workspace, "members"],
     () => getFetcher(`/api/workspaces/${workspace}/members`),
     {
-      enabled: userData !== undefined,
+      enabled: userData !== undefined && workspace !== undefined,
     }
   );
 

@@ -50,7 +50,7 @@ const LogIn = () => {
     <Loading />
   ) : (
     <div>
-      <Header>Sleact</Header>
+      <Header>slack</Header>
       <Form onSubmit={handleSubmit(onSubmit, onError)}>
         <LabelText id="email-label" style={{ marginBottom: "16px" }}>
           <span>이메일 주소</span>

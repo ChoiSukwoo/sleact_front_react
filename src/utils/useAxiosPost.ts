@@ -2,6 +2,9 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 export const useAxiosPost = () => {
   const postRequest = (url: string, data: any, config?: AxiosRequestConfig): Promise<any> => {
+    if (import.meta.env.MODE === "production") {
+      url = "https://api.slack.sukwoo.kr" + url;
+    }
     return axios
       .post(url, data, config)
       .then((response) => response.data)

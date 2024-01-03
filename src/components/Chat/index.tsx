@@ -11,7 +11,7 @@ interface Props {
 }
 
 // const BACK_URL = "http://localhost:3030";
-const BACK_URL = "https://api.slack.sukwoo.kr/api";
+const BACK_URL = import.meta.env.MODE === "production" ? "https://api.slack.sukwoo.kr" : "http://localhost:3030";
 
 const Chat: FC<Props> = memo(({ data }) => {
   const { workspace } = useParams<{ workspace: string; channel: string }>();

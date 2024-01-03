@@ -8,7 +8,7 @@ import { LabelText } from "@components/LabelText";
 const Loading: FC = () => {
   return (
     <div id="container">
-      <Header>Sleact</Header>
+      <Header>slack</Header>
       <Form>
         <LabelText id="email-label">
           <span>이메일 주소</span>

@@ -109,7 +109,6 @@ const Channel = () => {
   );
 
   useEffect(() => {
-    console.log("set onMessage");
     socket?.on("message", onMessage);
     return () => {
       socket?.off("message", onMessage);
@@ -173,7 +172,6 @@ const Channel = () => {
 
   const onSubmitForm = useCallback(
     (chat: string) => {
-      console.log("chat : ", chat, " url : ", `/api/workspaces/${workspace}/channels/${channel}/chats`);
       if (chat?.trim() && chatData && channelData && userData) {
         postRequest(`/api/workspaces/${workspace}/channels/${channel}/chats`, {
           content: chat,

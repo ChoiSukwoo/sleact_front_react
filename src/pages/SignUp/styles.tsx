@@ -1,20 +1,9 @@
 import styled from "@emotion/styled";
-import { Util } from "Styles";
+import { Font, Util } from "Styles";
 
 export const Header = styled.header({
+  ...Font.h1,
   textAlign: "center",
-  fontFamily: `
-    Slack-Larsseit,
-    Helvetica Neue,
-    Helvetica,
-    Segoe UI,
-    Tahoma,
-    Arial,
-    sans-serif`,
-  fontWeight: 700,
-  fontSize: "48px",
-  lineHeight: "46px",
-  letterSpacing: "-0.75px",
   marginTop: "50px",
   marginBottom: "50px",
 });
