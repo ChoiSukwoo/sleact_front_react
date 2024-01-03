@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import loadable from "@loadable/component";
 import { useQuery } from "react-query";
 import { ReactElement } from "react";
@@ -17,21 +17,21 @@ type AppRoute = {
 };
 
 const unLoginRouters: AppRoute[] = [
-  { path: "*", Component: () => <LogIn /> },
   { path: "/", Component: () => <LogIn /> },
   { path: "/login", Component: () => <LogIn /> },
-  { path: "/signUp", Component: () => <SignUp /> },
+  { path: "/signup", Component: () => <SignUp /> },
 ];
 
 const loginRouters: AppRoute[] = [{ path: "/workspace/:workspace/*", Component: () => <Workspace /> }];
 
 const RouterProvider = () => {
   const { data: userData } = useQuery<IUser | false, Error>("userInfo", () => getFetcher("/api/users"));
+
   return (
     <Routes>
       {unLoginRouters.map(({ path, Component }, idx) => (
         <Route
-          key={idx}
+          key={`unLogin_${idx}`}
           path={path}
           element={
             <UnLoginRouter userData={userData}>
@@ -43,7 +43,7 @@ const RouterProvider = () => {
 
       {loginRouters.map(({ path, Component }, idx) => (
         <Route
-          key={idx}
+          key={`login_${idx}`}
           path={path}
           element={
             <LoginRouter userData={userData}>
@@ -52,6 +52,8 @@ const RouterProvider = () => {
           }
         />
       ))}
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
