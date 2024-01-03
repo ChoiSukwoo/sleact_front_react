@@ -47,3 +47,13 @@ export const InviteWorkspaceFailToken: ToastTokenDto = {
   id: "InviteWorkspaceFailToken",
   msg: "해당 유저를 워크스페이스에 초대하는데 실패 했습니다.",
 };
+
+export const InviteChannelSuccessToken: ToastTokenDto = {
+  id: "InviteChannelSuccessToken",
+  msg: "해당 유저를 채널에 성공적으로 초대했습니다.",
+};
+
+export const InviteChannelFailToken: ToastTokenDto = {
+  id: "InviteChannelFailToken",
+  msg: "해당 유저를 채널에 초대하는데 실패 했습니다.",
+};

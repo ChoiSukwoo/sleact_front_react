@@ -1,7 +1,7 @@
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useQuery } from "react-query";
 import { toast } from "react-toastify";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 
 import { CreateWorkspaceFailToken, CreateWorkspaceSuccssToken } from "@const/Toast";
 import { InputText } from "@components/InputText";
@@ -10,22 +10,25 @@ import { Button } from "@components/Button";
 import Modal from "@components/Modal";
 import useAxiosPost from "@utils/useAxiosPost";
 import { getFetcher } from "@utils/fetcher";
+import { useRecoilState } from "recoil";
+import { currentModalState } from "@recoil/atom/modal";
 
-interface Props {
-  isShow: boolean;
-  onClose: () => void;
-}
+interface Props {}
 
 interface CreateWorkspaceDto {
   name: string;
   url: string;
 }
 
-const CreateWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
+const CreateWorkspaceModal: FC<Props> = ({}) => {
   const { refetch: userDataRefetch } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
+  const postRequest = useAxiosPost();
 
   const { register, handleSubmit, reset } = useForm<CreateWorkspaceDto>();
-  const postRequest = useAxiosPost();
+
+  const isShow = currentModal === "createWorkspace";
+  const onClose = useCallback(() => setCurrentModal(undefined), []);
 
   const workspaceReg = register("name", {
     required: "워크스페이스 명을 입력해야 합니다",

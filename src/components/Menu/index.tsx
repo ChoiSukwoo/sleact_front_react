@@ -2,28 +2,29 @@ import { MenuBackground, CloseModalButton, MenuContent } from "./styles";
 import { CSSProperties, FC, MouseEventHandler, PropsWithChildren, useCallback } from "react";
 
 import CloseIcon from "@svg/clear.svg?react";
+import { currentModalState } from "@recoil/atom/modal";
+import { useSetRecoilState } from "recoil";
 
 interface Props {
-  show: boolean;
-  onCloseModal: () => void;
   style?: CSSProperties;
 }
 
-const Menu: FC<PropsWithChildren<Props>> = ({ style, show, children, onCloseModal }) => {
+const Menu: FC<PropsWithChildren<Props>> = ({ style, children }) => {
+  const setCurrentModal = useSetRecoilState(currentModalState);
+
+  const onClose = useCallback(() => setCurrentModal(undefined), []);
+
   const stopPropagation = useCallback<MouseEventHandler<HTMLDivElement>>((event) => {
     event.stopPropagation();
   }, []);
 
-  if (!show) {
-    return null;
-  }
   return (
     <>
-      <MenuBackground onClick={onCloseModal} />
+      <MenuBackground onClick={onClose} />
       <MenuContent onClick={stopPropagation} style={style}>
-        <CloseModalButton onClick={onCloseModal}>
+        <CloseModalButton onClick={onClose}>
           <CloseIcon />
-        </CloseModalButton>{" "}
+        </CloseModalButton>
         {children}
       </MenuContent>
     </>

@@ -2,7 +2,7 @@ import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { useQuery } from "react-query";
 import { toast } from "react-toastify";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 
 import { InviteWorkspaceFailToken, InviteWorkspaceSuccessToken } from "@const/Toast";
 import { InputText } from "@components/InputText";
@@ -12,17 +12,16 @@ import Modal from "@components/Modal";
 
 import useAxiosPost from "@utils/useAxiosPost";
 import { getFetcher } from "@utils/fetcher";
+import { currentModalState } from "@recoil/atom/modal";
+import { useRecoilState } from "recoil";
 
-interface Props {
-  isShow: boolean;
-  onClose: () => void;
-}
+interface Props {}
 
 interface InviteWorkspaceDto {
   email: string;
 }
 
-const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
+const InviteWorkspaceModal: FC<Props> = ({}) => {
   const { workspace } = useParams<{ workspace?: string }>();
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { refetch: refetchMember } = useQuery<IChannel[], Error>(
@@ -32,6 +31,11 @@ const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
       enabled: userData !== undefined && workspace !== undefined,
     }
   );
+
+  const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
+
+  const isShow = currentModal === "inviteWorkspace";
+  const onClose = useCallback(() => setCurrentModal(undefined), []);
 
   const { register, handleSubmit, reset } = useForm<InviteWorkspaceDto>();
   const postRequest = useAxiosPost();
@@ -44,11 +48,12 @@ const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
   });
 
   const onSubmit: SubmitHandler<InviteWorkspaceDto> = async (data) => {
+    setCurrentModal(undefined);
+    reset();
+
     postRequest(`/api/workspaces/${workspace}/members`, data)
       .then(() => {
         toast.success(InviteWorkspaceSuccessToken.msg, { toastId: InviteWorkspaceSuccessToken.id });
-        reset();
-        onClose();
       })
       .catch((error: ApiErrorDto | undefined) => {
         console.dir(error);
@@ -69,7 +74,7 @@ const InviteWorkspaceModal: FC<Props> = ({ isShow, onClose }) => {
   return (
     <Modal isShow={isShow} onCloseModal={onClose} style={{ width: "450px" }}>
       <form onSubmit={handleSubmit(onSubmit, onSubmitError)}>
-        <LabelText id="member-label">
+        <LabelText id="member-label" style={{ marginBottom: "16px" }}>
           <span>이메일</span>
           <InputText id="member" type="email" {...memberReg} />
         </LabelText>

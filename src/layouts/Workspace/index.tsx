@@ -1,5 +1,5 @@
 //라이브러리
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useParams } from "react-router";
 import { useQuery } from "react-query";
@@ -40,39 +40,6 @@ const Workspace: FC = () => {
   const setWorkspace = useSetRecoilState(workspaceState);
 
   const [socket, disconnectSocket] = useSocket(workspace);
-  const [isCreateWorkspaceModal, setCreateWorkspaceModal] = useState(false);
-  const [isInviteWorkspaceModal, setInviteWorkspaceModal] = useState(false);
-  const [isInviteChanneleModal, setInviteChanneleModal] = useState(false);
-  const [isCreateChannelModal, setCreateChannelModal] = useState(false);
-  const [isWorkspaceMenu, setWorkspaceMenu] = useState(false);
-  const [isUserMenu, setUserMenu] = useState(false);
-
-  const onClickCreateWorkspace = useCallback(() => {
-    setCreateWorkspaceModal(true);
-  }, []);
-
-  const toggleWorkspaceMenu = useCallback(() => {
-    setWorkspaceMenu((prev) => !prev);
-  }, []);
-
-  const onClickInviteWorkspace = useCallback(() => {
-    onCloseModal();
-    setInviteWorkspaceModal(true);
-  }, []);
-
-  const onClickAddChannel = useCallback(() => {
-    onCloseModal();
-    setCreateChannelModal(true);
-  }, []);
-
-  const onCloseModal = useCallback(() => {
-    setCreateWorkspaceModal(false);
-    setCreateChannelModal(false);
-    setInviteWorkspaceModal(false);
-    setInviteChanneleModal(false);
-    setWorkspaceMenu(false);
-    setUserMenu(false);
-  }, []);
 
   useEffect(() => {
     setWorkspace(workspace);
@@ -96,16 +63,10 @@ const Workspace: FC = () => {
 
   return (
     <div>
-      <Header isShowUserMenu={isUserMenu} setShowUserMenu={setUserMenu} onCloseModal={onCloseModal} />
+      <Header />
       <WorkspaceWrapper>
-        <WorkspaceSide onClickCreateWorkspace={onClickCreateWorkspace} />
-        <ChannelSide
-          isWorkspaceMenu={isWorkspaceMenu}
-          toggleWorkspaceMenu={toggleWorkspaceMenu}
-          onClickInviteWorkspace={onClickInviteWorkspace}
-          onClickAddChannel={onClickAddChannel}
-          onCloseModal={onCloseModal}
-        />
+        <WorkspaceSide />
+        <ChannelSide />
         <Chats>
           <Routes>
             <Route path="/channel/:channel" element={<Channel />} />
@@ -113,14 +74,10 @@ const Workspace: FC = () => {
           </Routes>
         </Chats>
       </WorkspaceWrapper>
-      <CreateWorkspaceModal isShow={isCreateWorkspaceModal} onClose={onCloseModal} />
-      <CreateChannelModal isShow={isCreateChannelModal} onClose={onCloseModal} />
-      <InviteWorkspaceModal isShow={isInviteWorkspaceModal} onClose={onCloseModal} />
-      <InviteChannelModal
-        show={isInviteChanneleModal}
-        onCloseModal={onCloseModal}
-        setShowInviteChannelModal={setInviteChanneleModal}
-      />
+      <CreateWorkspaceModal />
+      <CreateChannelModal />
+      <InviteWorkspaceModal />
+      <InviteChannelModal />
     </div>
   );
 };

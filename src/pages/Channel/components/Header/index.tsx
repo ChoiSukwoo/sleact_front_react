@@ -1,5 +1,5 @@
 import { FC, useCallback } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
 
@@ -8,12 +8,14 @@ import workspaceState from "@recoil/atom/workspace";
 
 import { HeaderStyles, InviteButton } from "./style";
 import PeopleIcon from "@svg/people.svg?react";
+import { currentModalState } from "@recoil/atom/modal";
 
 interface Props {}
 
 const Header: FC<Props> = () => {
   const { id: channel } = useRecoilValue(channelTypeState);
   const workspace = useRecoilValue(workspaceState);
+  const setCurrentModal = useSetRecoilState(currentModalState);
 
   const { data: channelMembersData } = useQuery<IUser[]>(
     ["channelMembersData", workspace, channel],
@@ -23,7 +25,9 @@ const Header: FC<Props> = () => {
     }
   );
 
-  const onClickInviteChannel = useCallback(() => {}, []);
+  const onClickInviteChannel = useCallback(() => {
+    setCurrentModal("inviteChannel");
+  }, []);
 
   return (
     <HeaderStyles>

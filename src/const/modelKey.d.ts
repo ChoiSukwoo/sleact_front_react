@@ -1,1 +1,7 @@
-type modalKey = "aa" | "bbb";
+type modalKey =
+  | "createWorkspace"
+  | "workspaceMenu"
+  | "inviteWorkspace"
+  | "createChannel"
+  | "userMenu"
+  | "inviteChannel";

@@ -1,16 +1,20 @@
 import { useQuery } from "react-query";
 import { AddButton, WorkspaceButton, Workspaces } from "./style";
 import { getFetcher } from "@utils/fetcher";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Loading from "./Loading";
+import { currentModalState } from "@recoil/atom/modal";
+import { useSetRecoilState } from "recoil";
 
-interface Props {
-  onClickCreateWorkspace: () => void;
-}
+interface Props {}
 
-export const WorkspaceSide: FC<Props> = ({ onClickCreateWorkspace }) => {
+export const WorkspaceSide: FC<Props> = ({}) => {
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  const setCurrentModal = useSetRecoilState(currentModalState);
+  const onClickCreateWorkspace = useCallback(() => {
+    setCurrentModal("createWorkspace");
+  }, []);
 
   return userData === undefined ? (
     <Loading />

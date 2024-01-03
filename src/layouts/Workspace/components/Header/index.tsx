@@ -3,31 +3,37 @@ import gravatar from "gravatar";
 import { HeaderStyle, ProfileImg, ProfileModal, LogOutButton } from "./styles";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
-import { Dispatch, FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import useAxiosPost from "@utils/useAxiosPost";
 import { LogoutFailToken, LogoutSuccessToken } from "@const/Toast";
+import { currentModalState } from "@recoil/atom/modal";
+import { useRecoilState } from "recoil";
 
-interface Prop {
-  isShowUserMenu: boolean;
-  setShowUserMenu: Dispatch<React.SetStateAction<boolean>>;
-  onCloseModal: () => void;
-}
+interface Prop {}
 
-const Header: FC<Prop> = ({ isShowUserMenu: isShow, setShowUserMenu: setShow, onCloseModal }) => {
+const Header: FC<Prop> = ({}) => {
   const postRequest = useAxiosPost();
   const navigate = useNavigate();
 
   const { data: userData, refetch: userDataRefetch } = useQuery<IUser | false, Error>("userInfo", () =>
     getFetcher("/api/users")
   );
+  const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
+
+  const isShow = currentModal === "userMenu";
 
   const onClickUserProfile = useCallback(() => {
-    setShow((prev) => !prev);
+    setCurrentModal("userMenu");
   }, []);
 
+  useEffect(() => {
+    console.log(currentModal);
+  }, [currentModal]);
+
   const onLogOut = useCallback(() => {
+    setCurrentModal(undefined);
     postRequest("/api/users/logout", null, { withCredentials: true })
       .then(() => {
         toast.success(LogoutSuccessToken.msg, { toastId: LogoutSuccessToken.id });
@@ -56,7 +62,7 @@ const Header: FC<Prop> = ({ isShowUserMenu: isShow, setShowUserMenu: setShow, on
             alt={userData.nickname}
           />
           {isShow && (
-            <Menu style={{ right: 5, top: "calc(100% + 5px)" }} show={isShow} onCloseModal={onCloseModal}>
+            <Menu style={{ right: 5, top: "calc(100% + 5px)" }}>
               <ProfileModal>
                 <img src={gravatar.url(userData.email, { s: "36px", d: "retro" })} alt={userData.nickname} />
                 <div>

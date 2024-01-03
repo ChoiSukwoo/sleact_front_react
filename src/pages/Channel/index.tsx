@@ -115,10 +115,6 @@ const Channel = () => {
     };
   }, [socket, onMessage]);
 
-  // const onClickInviteChannel = useCallback(() => {
-  //   setShowInviteChannelModal(true);
-  // }, []);
-
   // const onDrop = useCallback(
   //   (e) => {
   //     e.preventDefault();

@@ -1,64 +1,76 @@
-// import Modal from "@components/Modal";
-// import useInput from "@hooks/useInput";
-// import { Button, Input, Label } from "@pages/SignUp/styles";
-// import fetcher from "@utils/fetcher";
-// import axios from "axios";
-// import { FC, FormEventHandler, useCallback } from "react";
-// import { useParams } from "react-router";
-// import { toast } from "react-toastify";
-// import useSWR from 'swr';
+import Modal from "@components/Modal";
+import { InputText } from "@components/InputText";
+import { LabelText } from "@components/LabelText";
+import { Button } from "@components/Button";
 
-import { FC } from "react";
+import { FC, useCallback } from "react";
+import { toast } from "react-toastify";
+import { InviteChannelSuccessToken, InviteChannelFailToken } from "@const/Toast";
+import { currentModalState } from "@recoil/atom/modal";
+import workspace from "@recoil/atom/workspace";
+import useAxiosPost from "@utils/useAxiosPost";
+import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
+import { useRecoilState, useRecoilValue } from "recoil";
+import channelTypeState from "@recoil/atom/channelType";
 
-interface Props {
-  show: boolean;
-  onCloseModal: () => void;
-  setShowInviteChannelModal: (flag: boolean) => void;
+interface Props {}
+
+interface InviteChannelDto {
+  email: string;
 }
+
 const InviteChannelModal: FC<Props> = ({}) => {
-  // const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
-  // const [newMember, onChangeNewMember, setNewMember] = useInput("");
-  // const { data: userData } = useSWR<IUser>("/api/users", fetcher);
-  // const { mutate: revalidateMembers } = useSWR<IUser[]>(
-  //   userData && channel ? `/api/workspaces/${workspace}/channels/${channel}/members` : null,
-  //   fetcher
-  // );
+  const channel = useRecoilValue(channelTypeState);
 
-  // const onInviteMember = useCallback<FormEventHandler<HTMLFormElement>>(
-  //   (event) => {
-  //     event.preventDefault();
-  //     if (!newMember || !newMember.trim()) {
-  //       return;
-  //     }
-  //     axios
-  //       .post(`/api/workspaces/${workspace}/channels/${channel}/members`, {
-  //         email: newMember,
-  //       })
-  //       .then(() => {
-  //         revalidateMembers();
-  //         setShowInviteChannelModal(false);
-  //         setNewMember("");
-  //       })
-  //       .catch((error) => {
-  //         console.dir(error);
-  //         toast.error(error.response?.data, { position: "bottom-center" });
-  //       });
-  //   },
-  //   [newMember]
-  // );
+  const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
 
-  // return (
-  //   <Modal show={show} onCloseModal={onCloseModal}>
-  //     <form onSubmit={onInviteMember}>
-  //       <Label id="member-label">
-  //         <span>채널 멤버 초대</span>
-  //         <Input id="member" value={newMember} onChange={onChangeNewMember} />
-  //       </Label>
-  //       <Button type="submit">초대하기</Button>
-  //     </form>
-  //   </Modal>
-  // );
-  return <></>;
+  const isShow = currentModal === "inviteChannel";
+  const onClose = useCallback(() => setCurrentModal(undefined), []);
+
+  const { register, handleSubmit, reset } = useForm<InviteChannelDto>();
+  const postRequest = useAxiosPost();
+
+  const memberReg = register("email", {
+    required: "초대할 유저의 email을 입력해야 합니다",
+    validate: {
+      hasValue: (value) => value.trim() !== "" || "초대할 유저의 email을 입력해야 합니다",
+    },
+  });
+
+  const onSubmit: SubmitHandler<InviteChannelDto> = async (data) => {
+    setCurrentModal(undefined);
+    reset();
+    if (channel === undefined || channel.type === "dm") {
+      return;
+    }
+    postRequest(`/api/workspaces/${workspace}/channels/${channel.id}/members`, data)
+      .then(() => {
+        toast.success(InviteChannelSuccessToken.msg, { toastId: InviteChannelSuccessToken.id });
+      })
+      .catch((error: ApiErrorDto | undefined) => {
+        console.dir(error);
+        toast.error(InviteChannelFailToken.msg, { toastId: InviteChannelFailToken.id });
+      });
+  };
+
+  const onSubmitError: SubmitErrorHandler<InviteChannelDto> = async (error) => {
+    if (error.email) {
+      toast.error(error.email.message, { toastId: InviteChannelFailToken.id });
+      return;
+    }
+  };
+
+  return (
+    <Modal isShow={isShow} onCloseModal={onClose} style={{ width: "450px" }}>
+      <form onSubmit={handleSubmit(onSubmit, onSubmitError)}>
+        <LabelText id="member-label" style={{ marginBottom: "16px" }}>
+          <span>채널 멤버 초대</span>
+          <InputText id="member" {...memberReg} />
+        </LabelText>
+        <Button type="submit">초대하기</Button>
+      </form>
+    </Modal>
+  );
 };
 
 export default InviteChannelModal;
