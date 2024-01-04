@@ -26,11 +26,7 @@ const LogIn = () => {
         refetch();
       })
       .catch((error: ApiErrorDto | undefined) => {
-        if (error) {
-          setErrorMsg(error.message[0] || "로그인중 에러가 발생하였습니다.");
-        } else {
-          setErrorMsg("로그인중 에러가 발생하였습니다.");
-        }
+        setErrorMsg(error?.message[0] ?? "로그인중 에러가 발생하였습니다.");
       });
   };
 

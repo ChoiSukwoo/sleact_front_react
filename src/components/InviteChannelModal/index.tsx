@@ -45,17 +45,16 @@ const InviteChannelModal: FC<Props> = ({}) => {
     }
     postRequest(`/api/workspaces/${workspace}/channels/${channel.id}/members`, data)
       .then(() => {
-        toast.success(InviteChannelSuccessToken.msg, { toastId: InviteChannelSuccessToken.id });
+        toast.success(InviteChannelSuccessToken.msg(), { toastId: InviteChannelSuccessToken.id });
       })
       .catch((error: ApiErrorDto | undefined) => {
-        console.dir(error);
-        toast.error(InviteChannelFailToken.msg, { toastId: InviteChannelFailToken.id });
+        toast.error(InviteChannelFailToken.msg(error?.message[0] ?? ""), { toastId: InviteChannelFailToken.id });
       });
   };
 
   const onSubmitError: SubmitErrorHandler<InviteChannelDto> = async (error) => {
     if (error.email) {
-      toast.error(error.email.message, { toastId: InviteChannelFailToken.id });
+      toast.error(InviteChannelFailToken.msg(error.email.message ?? ""), { toastId: InviteChannelFailToken.id });
       return;
     }
   };

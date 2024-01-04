@@ -47,13 +47,12 @@ const CreateChannelModal: FC<Props> = ({}) => {
   const onSubmit: SubmitHandler<CreateChannelDto> = async (data) => {
     postRequest(`/api/workspaces/${workspace}/channels`, data)
       .then(() => {
-        toast.success(CreateChannelSuccssToken.msg, { toastId: CreateChannelSuccssToken.id });
+        toast.success(CreateChannelSuccssToken.msg(), { toastId: CreateChannelSuccssToken.id });
         reset();
         onClose();
       })
       .catch((error: ApiErrorDto | undefined) => {
-        console.dir(error);
-        toast.error(CreateChannelFailToken.msg, { toastId: CreateChannelFailToken.id });
+        toast.error(CreateChannelFailToken.msg(error?.message[0] ?? ""), { toastId: CreateChannelFailToken.id });
       })
       .finally(() => {
         refetchChannel();
@@ -62,7 +61,7 @@ const CreateChannelModal: FC<Props> = ({}) => {
 
   const onSubmitError: SubmitErrorHandler<CreateChannelDto> = async (error) => {
     if (error.name) {
-      toast.error(error.name.message, { toastId: CreateChannelFailToken.id });
+      toast.error(CreateChannelFailToken.msg(error.name.message ?? ""), { toastId: CreateChannelFailToken.id });
       return;
     }
   };

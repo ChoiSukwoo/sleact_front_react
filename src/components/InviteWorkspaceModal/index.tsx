@@ -53,11 +53,10 @@ const InviteWorkspaceModal: FC<Props> = ({}) => {
 
     postRequest(`/api/workspaces/${workspace}/members`, data)
       .then(() => {
-        toast.success(InviteWorkspaceSuccessToken.msg, { toastId: InviteWorkspaceSuccessToken.id });
+        toast.success(InviteWorkspaceSuccessToken.msg(), { toastId: InviteWorkspaceSuccessToken.id });
       })
       .catch((error: ApiErrorDto | undefined) => {
-        console.dir(error);
-        toast.error(InviteWorkspaceFailToken.msg, { toastId: InviteWorkspaceFailToken.id });
+        toast.error(InviteWorkspaceFailToken.msg(error?.message[0] ?? ""), { toastId: InviteWorkspaceFailToken.id });
       })
       .finally(() => {
         refetchMember();
@@ -66,7 +65,7 @@ const InviteWorkspaceModal: FC<Props> = ({}) => {
 
   const onSubmitError: SubmitErrorHandler<InviteWorkspaceDto> = async (error) => {
     if (error.email) {
-      toast.error(error.email.message, { toastId: InviteWorkspaceFailToken.id });
+      toast.error(InviteWorkspaceFailToken.msg(error.email.message ?? ""), { toastId: InviteWorkspaceFailToken.id });
       return;
     }
   };

@@ -67,7 +67,7 @@ const SignUp = () => {
 
     postRequest("/api/users", dtoData, { withCredentials: true })
       .then(() => {
-        toast.success(SignUpSuccessToken.msg, { toastId: SignUpSuccessToken.id });
+        toast.success(SignUpSuccessToken.msg(), { toastId: SignUpSuccessToken.id });
         navigate("/");
       })
       .catch((error: ApiErrorDto | undefined) => {

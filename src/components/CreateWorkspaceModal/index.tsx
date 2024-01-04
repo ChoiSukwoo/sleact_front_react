@@ -49,13 +49,12 @@ const CreateWorkspaceModal: FC<Props> = ({}) => {
   const onSubmit: SubmitHandler<CreateWorkspaceDto> = async (data) => {
     postRequest("/api/workspaces", data)
       .then(() => {
-        toast.success(CreateWorkspaceSuccssToken.msg, { toastId: CreateWorkspaceSuccssToken.id });
+        toast.success(CreateWorkspaceSuccssToken.msg(), { toastId: CreateWorkspaceSuccssToken.id });
         reset();
         onClose();
       })
       .catch((error: ApiErrorDto | undefined) => {
-        console.dir(error);
-        toast.error(CreateWorkspaceFailToken.msg, { toastId: CreateWorkspaceFailToken.id });
+        toast.error(CreateWorkspaceFailToken.msg(error?.message[0] ?? ""), { toastId: CreateWorkspaceFailToken.id });
       })
       .finally(() => {
         userDataRefetch();
@@ -64,12 +63,12 @@ const CreateWorkspaceModal: FC<Props> = ({}) => {
 
   const onSubmitError: SubmitErrorHandler<CreateWorkspaceDto> = async (error) => {
     if (error.name) {
-      toast.error(error.name.message, { toastId: CreateWorkspaceFailToken.id });
+      toast.error(CreateWorkspaceFailToken.msg(error.name.message ?? ""), { toastId: CreateWorkspaceFailToken.id });
       return;
     }
 
     if (error.url) {
-      toast.error(error.url.message, { toastId: CreateWorkspaceFailToken.id });
+      toast.error(CreateWorkspaceFailToken.msg(error.url.message ?? ""), { toastId: CreateWorkspaceFailToken.id });
       return;
     }
   };

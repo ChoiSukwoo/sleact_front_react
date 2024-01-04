@@ -3,7 +3,7 @@ import gravatar from "gravatar";
 import { HeaderStyle, ProfileImg, ProfileModal, LogOutButton } from "./styles";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import useAxiosPost from "@utils/useAxiosPost";
@@ -28,23 +28,18 @@ const Header: FC<Prop> = ({}) => {
     setCurrentModal("userMenu");
   }, []);
 
-  useEffect(() => {
-    console.log(currentModal);
-  }, [currentModal]);
-
   const onLogOut = useCallback(() => {
     setCurrentModal(undefined);
     postRequest("/api/users/logout", null, { withCredentials: true })
       .then(() => {
-        toast.success(LogoutSuccessToken.msg, { toastId: LogoutSuccessToken.id });
+        toast.success(LogoutSuccessToken.msg(), { toastId: LogoutSuccessToken.id });
         navigate("/");
       })
       .catch((error: ApiErrorDto | undefined) => {
         if (error) {
-          toast.error(LogoutFailToken.msg, { toastId: LogoutFailToken.id });
-          console.log(error.message || "로그아웃에 실패하엿습니다.");
+          toast.error(LogoutFailToken.msg(error.message[0]), { toastId: LogoutFailToken.id });
         } else {
-          toast.error(LogoutFailToken.msg, { toastId: LogoutFailToken.id });
+          toast.error(LogoutFailToken.msg(""), { toastId: LogoutFailToken.id });
         }
       })
       .finally(() => {
