@@ -21,30 +21,24 @@ const Channel = () => {
   const workspace = useRecoilValue(workspaceState);
   const { channel } = useParams<{ channel: string }>();
   const setChannelType = useSetRecoilState(channelTypeState);
+
   const [socket] = useSocket(workspace);
+  const postRequest = useAxiosPost();
+
+  const [chatSections, setChatSections] = useState<MakeSectionResult>({});
+  const [receivedChatMap, setReceivedChatMap] = useState<{ [key: string]: IChat[] }>({});
+  const [tempChatMap, setTempChatMap] = useState<{ [key: string]: IChat[] }>({});
+
+  const scrollbarRef = useRef<Scrollbars>(null);
+
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}`),
     {
-      enabled: workspace !== undefined && channel !== undefined,
+      enabled: !!workspace && !!channel,
     }
   );
-
-  //채널 접속후 마지막 읽은 시간 갱신
-  useEffect(() => {
-    if (!workspace || !channelData) {
-      return;
-    }
-    const nowTime = new Date().getTime();
-    const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
-    localStorage.setItem(storageKey, nowTime.toString());
-    postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
-      time: nowTime,
-    });
-  }, [channelData, workspace]);
-
-  const [tempChat, setTempChat] = useState<{ [key: string]: IChat[] }>({});
 
   const {
     data: chatData,
@@ -54,7 +48,7 @@ const Channel = () => {
   } = useInfiniteQuery(
     ["chatData", workspace, channel],
     ({ pageParam = 1 }): Promise<IChat[]> => {
-      const skip = channel && tempChat[channel] ? tempChat[channel].length : 0;
+      const skip = channel && receivedChatMap[channel] ? receivedChatMap[channel].length : 0;
       return getFetcher(
         `/api/workspaces/${workspace}/channels/${channel}/chats?perpage=${PAGE_SIZE}&page=${pageParam}&skip=${skip}`
       );
@@ -69,20 +63,55 @@ const Channel = () => {
       },
     }
   );
-  const postRequest = useAxiosPost();
 
-  const [chatSections, setChatSections] = useState<MakeSectionResult>({});
+  const onSubmitForm = useCallback(
+    (chat: string) => {
+      if (chat?.trim() && chatData && channelData && userData) {
+        //옵티미스틱 처리
+        const tempChat: IChat = {
+          id: 0,
+          userId: userData.id,
+          user: userData,
+          content: chat,
+          createdAt: new Date(),
+          channelId: channelData.id,
+          channel: channelData,
+        };
 
-  const scrollbarRef = useRef<Scrollbars>(null);
+        setTempChatMap((prev) => ({
+          ...prev,
+          [channelData.id]: [...(prev[channelData.id] || []), tempChat],
+        }));
 
+        postRequest(`/api/workspaces/${workspace}/channels/${channel}/chats`, {
+          content: chat,
+        }).finally(() => {
+          setTempChatMap((prev) => {
+            const prevChats = prev[channelData.id] || [];
+            const updatedChats = prevChats.filter((chat) => chat !== tempChat); // tempChat 객체를 이용하여 비교
+            return {
+              ...prev,
+              [channelData.id]: updatedChats,
+            };
+          });
+        });
+      }
+    },
+    [chatData, channelData, userData]
+  );
+
+  //모든 채팅 파편 합치기
   useEffect(() => {
-    if (channel) {
-      const newChatList = chatData?.pages.flat().reverse() ?? [];
-      const tempChatList = tempChat[channel] || [];
-      const chatList = makeSection(newChatList.concat(tempChatList));
-      setChatSections(chatList);
+    if (!channelData) {
+      return;
     }
-  }, [chatData, tempChat, channel]);
+    const newChatList = chatData?.pages.flat().reverse() ?? [];
+    const receivedChatList = receivedChatMap[channelData.id] || [];
+    const tempChatList = tempChatMap[channelData.id] || [];
+    const chatList = makeSection(newChatList.concat(receivedChatList).concat(tempChatList));
+    setChatSections(chatList);
+    scrollToBottom();
+  }, [channelData, chatData, receivedChatMap, tempChatMap]);
 
   const onMessage = useCallback(
     (data: IChat) => {
@@ -91,9 +120,9 @@ const Channel = () => {
       }
 
       //접속 이후 채팅내용 기록
-      setTempChat((prev) => ({
+      setReceivedChatMap((prev) => ({
         ...prev,
-        [channel]: [...(prev[channel] || []), data],
+        [channelData.id]: [...(prev[channelData.id] || []), data],
       }));
 
       //마지막으로 읽은 시간 기록
@@ -103,22 +132,23 @@ const Channel = () => {
       postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
         time: nowTime,
       });
-
-      //스크롤 조정
-      const current = scrollbarRef.current;
-      if (current) {
-        if (
-          scrollbarRef.current.getScrollHeight() <
-          scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + SNAP_HEIGHT
-        ) {
-          setTimeout(() => {
-            scrollbarRef.current?.scrollToBottom();
-          }, 10);
-        }
-      }
     },
     [channel, userData, channelData]
   );
+
+  const scrollToBottom = useCallback(() => {
+    const current = scrollbarRef.current;
+    if (current) {
+      if (
+        scrollbarRef.current.getScrollHeight() <
+        scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + SNAP_HEIGHT
+      ) {
+        setTimeout(() => {
+          scrollbarRef.current?.scrollToBottom();
+        }, 10);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     socket?.on("message", onMessage);
@@ -126,6 +156,19 @@ const Channel = () => {
       socket?.off("message", onMessage);
     };
   }, [socket, onMessage]);
+
+  //채널 접속후 마지막 읽은 시간 갱신
+  useEffect(() => {
+    if (!workspace || !channelData) {
+      return;
+    }
+    const nowTime = new Date().getTime();
+    const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
+    localStorage.setItem(storageKey, nowTime.toString());
+    postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
+      time: nowTime,
+    });
+  }, [channelData, workspace]);
 
   // const onDrop = useCallback(
   //   (e) => {
@@ -178,16 +221,6 @@ const Channel = () => {
     };
   }, [channel]);
 
-  const onSubmitForm = useCallback(
-    (chat: string) => {
-      if (chat?.trim() && chatData && channelData && userData) {
-        postRequest(`/api/workspaces/${workspace}/channels/${channel}/chats`, {
-          content: chat,
-        });
-      }
-    },
-    [chatData, channelData, userData]
-  );
   return (
     <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header />

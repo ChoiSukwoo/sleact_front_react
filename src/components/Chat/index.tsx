@@ -1,9 +1,10 @@
 import { ChatWrapper } from "@components/Chat/styles";
+import workspaceState from "@recoil/atom/workspace";
 import dayjs from "dayjs";
 import gravatar from "gravatar";
 import { FC, useMemo, memo } from "react";
-import { useParams } from "react-router";
 import { Link } from "react-router-dom";
+import { useRecoilValue } from "recoil";
 import regexifyString from "regexify-string";
 
 interface Props {
@@ -14,7 +15,7 @@ interface Props {
 const BACK_URL = import.meta.env.MODE === "production" ? "https://api.slack.sukwoo.kr" : "http://localhost:3030";
 
 const Chat: FC<Props> = memo(({ data }) => {
-  const { workspace } = useParams<{ workspace: string; channel: string }>();
+  const workspace = useRecoilValue(workspaceState);
   const user: IUser = "sender" in data ? data.sender : data.user;
   const result = useMemo<(string | JSX.Element)[] | JSX.Element>(
     () =>
@@ -48,13 +49,12 @@ const Chat: FC<Props> = memo(({ data }) => {
       <div className="chat-text">
         <div className="chat-user">
           <b>{user.nickname}</b>
-          <span>{dayjs(data.createdAt).format("h:mm A")}</span>
+          <span>{data.id === 0 ? "Sending" : dayjs(data.createdAt).format("h:mm A")}</span>
         </div>
         <p>{result}</p>
       </div>
     </ChatWrapper>
   );
-  return <></>;
 });
 
 export default Chat;

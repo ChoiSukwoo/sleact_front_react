@@ -48,7 +48,7 @@ const ChatBox: FC<Props> = ({ onSubmitForm }) => {
   const onSubmit = useCallback<SubmitHandler<ChatForm>>(
     async (data) => {
       onSubmitForm(data.chat);
-      method.resetField("chat");
+      method.reset();
     },
     [method, onSubmitForm]
   );
