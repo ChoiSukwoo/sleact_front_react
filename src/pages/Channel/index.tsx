@@ -24,19 +24,24 @@ const Channel = () => {
   const [socket] = useSocket(workspace);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel, Error>(
-    ["channelData", channel],
+    ["channelData", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}`),
     {
       enabled: workspace !== undefined && channel !== undefined,
     }
   );
 
+  //채널 접속후 마지막 읽은 시간 갱신
   useEffect(() => {
-    if (workspace && channelData) {
-      postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
-        time: new Date().getTime(),
-      });
+    if (!workspace || !channelData) {
+      return;
     }
+    const nowTime = new Date().getTime();
+    const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
+    localStorage.setItem(storageKey, nowTime.toString());
+    postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
+      time: nowTime,
+    });
   }, [channelData, workspace]);
 
   const [tempChat, setTempChat] = useState<{ [key: string]: IChat[] }>({});
@@ -81,27 +86,34 @@ const Channel = () => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      if (data.channel.name === channel) {
-        setTempChat((prev) => ({
-          ...prev,
-          [channel]: [...(prev[channel] || []), data],
-        }));
+      if (!channelData || data.channel.name !== channel) {
+        return;
+      }
 
-        if (channelData) {
-          postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
-            time: new Date(data.createdAt).getTime(),
-          });
-        }
-        const current = scrollbarRef.current;
-        if (current) {
-          if (
-            scrollbarRef.current.getScrollHeight() <
-            scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + SNAP_HEIGHT
-          ) {
-            setTimeout(() => {
-              scrollbarRef.current?.scrollToBottom();
-            }, 10);
-          }
+      //접속 이후 채팅내용 기록
+      setTempChat((prev) => ({
+        ...prev,
+        [channel]: [...(prev[channel] || []), data],
+      }));
+
+      //마지막으로 읽은 시간 기록
+      const nowTime = new Date(data.createdAt).getTime();
+      const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
+      localStorage.setItem(storageKey, nowTime.toString());
+      postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
+        time: nowTime,
+      });
+
+      //스크롤 조정
+      const current = scrollbarRef.current;
+      if (current) {
+        if (
+          scrollbarRef.current.getScrollHeight() <
+          scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollTop() + SNAP_HEIGHT
+        ) {
+          setTimeout(() => {
+            scrollbarRef.current?.scrollToBottom();
+          }, 10);
         }
       }
     },

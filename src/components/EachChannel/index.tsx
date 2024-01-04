@@ -14,15 +14,24 @@ const EachChannel: FC<Props> = ({ channel }) => {
   const workspace = useRecoilValue(workspaceState);
   const channelState = useRecoilValue(channelTypeState);
   const [socket] = useSocket(workspace);
-  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {
-    refetchOnMount: false,
-  });
 
-  const { data: lastRead, refetch: lastReadRefetch } = useQuery<LastReadType>(
-    [workspace, channel.name, "lastread"],
-    () => getFetcher(`/api/users/workspace/${workspace}/channel/${channel.id}/lastread`),
+  //현재 접속중인 채널인가?
+  const nowJoinedChannel = channelState.type === "channel" && channelState.id === channel.name;
+
+  const { data: lastRead, refetch: refetchLastRead } = useQuery<LastReadType>(
+    [workspace, channel.name, "unreads"],
+    async () => {
+      const storageKey = `workspace-lastRead-${workspace}-${channel.id}`;
+      const localLastRead = localStorage.getItem(storageKey);
+      if (localLastRead) {
+        return {
+          time: localLastRead,
+        };
+      }
+      return await getFetcher(`/api/users/workspace/${workspace}/channel/${channel.id}/lastread`);
+    },
     {
-      enabled: userData !== undefined && workspace !== undefined,
+      enabled: !!workspace && !!channel.id && !nowJoinedChannel,
     }
   );
 
@@ -30,23 +39,24 @@ const EachChannel: FC<Props> = ({ channel }) => {
     [workspace, channel.name, "unreads"],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel.name}/unreads?after=${lastRead?.time}`),
     {
-      enabled: lastRead !== undefined && workspace !== undefined && channel.name !== undefined,
+      enabled: !!workspace && !!channel.name && lastRead !== undefined && !nowJoinedChannel,
     }
   );
 
+  //안읽은 메시지가 있는가?
+  const hasUnReadCnt = !nowJoinedChannel && unReadCnt !== undefined && unReadCnt > 0;
+
   const onMessage = useCallback(
     (data: IChat) => {
-      //현재 접속 채널이 아님
-      if (channelState.type === "channel" && channelState.id === channel.id) {
-        return;
-      }
+      //채널에 접속중이 아닐떄
+      // 현재 접속중인 채널일시 이벤트 실행하지 않음
       //메시지를 전달받을ID와 채널ID랑 일치하지 않음
-      if (data.channelId !== channel.id) {
+      if (channelState.type !== "channel" || nowJoinedChannel || data.channelId !== channel.id) {
         return;
       }
       unReadCntRefetch();
     },
-    [channel, channelState]
+    [channelState, nowJoinedChannel, channel]
   );
 
   useEffect(() => {
@@ -60,15 +70,17 @@ const EachChannel: FC<Props> = ({ channel }) => {
   }, [socket, onMessage]);
 
   useEffect(() => {
-    if (channelState.type === "channel" && channelState.id === channel.id) {
-      lastReadRefetch();
-    }
-  }, [channelState, channel]);
+    refetchLastRead();
+  }, [workspace, channelState]);
+
+  useEffect(() => {
+    unReadCntRefetch();
+  }, [lastRead]);
 
   return (
     <ChannelLink key={channel.id} to={`/workspace/${workspace}/channel/${channel.name}`}>
       <span># {channel.name}</span>
-      {unReadCnt && unReadCnt > 0 ? <span className="count">{unReadCnt}</span> : <></>}
+      {hasUnReadCnt ?? <span className="count">{unReadCnt}</span>}
     </ChannelLink>
   );
 };
