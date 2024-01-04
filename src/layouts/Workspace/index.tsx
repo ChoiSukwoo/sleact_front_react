@@ -1,6 +1,6 @@
 //라이브러리
 import { FC, useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { useParams } from "react-router";
 import { useQuery } from "react-query";
 
@@ -25,15 +25,18 @@ import useSocket from "@hooks/useSocket";
 import ChannelSide from "./components/ChannelSide";
 import { useSetRecoilState } from "recoil";
 import workspaceState from "@recoil/atom/workspace";
+import { toast } from "react-toastify";
+import { InvalidWorkspacesToken } from "@const/Toast";
 
 const Workspace: FC = () => {
+  const navigate = useNavigate();
   const { workspace } = useParams<{ workspace?: string }>();
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel[], Error>(
-    "channelData",
+    ["channelData", workspace],
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
-      enabled: userData !== undefined,
+      enabled: userData !== undefined && workspace !== undefined,
     }
   );
 
@@ -42,11 +45,24 @@ const Workspace: FC = () => {
   const [socket, disconnectSocket] = useSocket(workspace);
 
   useEffect(() => {
-    setWorkspace(workspace);
+    if (!userData || !workspace) {
+      return;
+    }
+
+    if (userData.workspaces.some((w) => w.url === workspace)) {
+      setWorkspace(workspace);
+    } else {
+      const redirectWorkspace = userData.workspaces[0];
+      toast.error(InvalidWorkspacesToken.msg(workspace, redirectWorkspace.name), {
+        toastId: InvalidWorkspacesToken.id,
+      });
+      navigate(`/workspace/${redirectWorkspace.url}/channel/일반`);
+    }
+
     return () => {
       setWorkspace(undefined);
     };
-  }, [workspace]);
+  }, [userData, workspace]);
 
   //워크스페이스 변경시 연결 종료
   useEffect(() => {
