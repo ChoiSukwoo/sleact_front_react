@@ -20,7 +20,7 @@ const Chat: FC<Props> = memo(({ data }) => {
   const result = useMemo<(string | JSX.Element)[] | JSX.Element>(
     () =>
       data.content.startsWith("uploads\\") ? (
-        <img src={`${BACK_URL}/${data.content}`} style={{ maxHeight: 200 }} alt={"이미지"} />
+        <img src={`${BACK_URL}/${data.content}`} style={{ maxHeight: 200, maxWidth: "100%" }} alt={"이미지"} />
       ) : (
         regexifyString({
           input: data?.content,
@@ -50,6 +50,7 @@ const Chat: FC<Props> = memo(({ data }) => {
         <div className="chat-user">
           <b>{user.nickname}</b>
           <span>{data.id === 0 ? "Sending" : dayjs(data.createdAt).format("h:mm A")}</span>
+          <span>{data.id}</span>
         </div>
         <p>{result}</p>
       </div>

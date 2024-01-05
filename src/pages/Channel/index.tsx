@@ -1,25 +1,38 @@
 import ChatBox from "@components/ChatBox";
 import ChatList from "@components/ChatList";
 import useSocket from "@hooks/useSocket";
-import { Container } from "@pages/Channel/styles";
+import { Container, DragOver } from "./styles";
 import channelTypeState from "@recoil/atom/channelType";
 import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import makeSection from "@utils/makeSection";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, DragEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import { useInfiniteQuery, useQuery } from "react-query";
 import { useParams } from "react-router";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import Header from "./components/Header";
 import useAxiosPost from "@utils/useAxiosPost";
+import { toast } from "react-toastify";
+import { ImgUploadFailToken, ImgUploadSuccessToken, InvalidChannelToken } from "@const/Toast";
+import { useNavigate } from "react-router-dom";
 
 const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;
 
 const Channel = () => {
   const workspace = useRecoilValue(workspaceState);
+  const navigate = useNavigate();
+  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { channel } = useParams<{ channel: string }>();
+  const { data: channelMembers } = useQuery<IUser[]>(
+    ["channelMembers", workspace, channel],
+    () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
+    {
+      enabled: !!workspace && !!channel,
+    }
+  );
+  const [dragOver, setDragOver] = useState(false);
   const setChannelType = useSetRecoilState(channelTypeState);
 
   const [socket] = useSocket(workspace);
@@ -31,7 +44,6 @@ const Channel = () => {
 
   const scrollbarRef = useRef<Scrollbars>(null);
 
-  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}`),
@@ -48,7 +60,7 @@ const Channel = () => {
   } = useInfiniteQuery(
     ["chatData", workspace, channel],
     ({ pageParam = 1 }): Promise<IChat[]> => {
-      const skip = channel && receivedChatMap[channel] ? receivedChatMap[channel].length : 0;
+      const skip = channelData && receivedChatMap[channelData.id] ? receivedChatMap[channelData.id].length : 0;
       return getFetcher(
         `/api/workspaces/${workspace}/channels/${channel}/chats?perpage=${PAGE_SIZE}&page=${pageParam}&skip=${skip}`
       );
@@ -170,59 +182,116 @@ const Channel = () => {
     });
   }, [channelData, workspace]);
 
-  // const onDrop = useCallback(
-  //   (e) => {
-  //     e.preventDefault();
-  //     console.log(e);
-  //     const formData = new FormData();
-  //     if (e.dataTransfer.items) {
-  //       // Use DataTransferItemList interface to access the file(s)
-  //       for (let i = 0; i < e.dataTransfer.items.length; i++) {
-  //         // If dropped items aren't files, reject them
-  //         console.log(e.dataTransfer.items[i]);
-  //         if (e.dataTransfer.items[i].kind === "file") {
-  //           const file = e.dataTransfer.items[i].getAsFile();
-  //           console.log(e, ".... file[" + i + "].name = " + file.name);
-  //           formData.append("image", file);
-  //         }
-  //       }
-  //     } else {
-  //       // Use DataTransfer interface to access the file(s)
-  //       for (let i = 0; i < e.dataTransfer.files.length; i++) {
-  //         console.log(e, "... file[" + i + "].name = " + e.dataTransfer.files[i].name);
-  //         formData.append("image", e.dataTransfer.files[i]);
-  //       }
-  //     }
-  //     axios.post(`/api/workspaces/${workspace}/channels/${channel}/images`, formData).then(() => {
-  //       setDragOver(false);
-  //       localStorage.setItem(`${workspace}-${channel}`, new Date().getTime().toString());
-  //     });
-  //   },
-  //   [workspace, channel]
-  // );
-
-  // const onDragOver = useCallback((e) => {
-  //   e.preventDefault();
-  //   console.log(e);
-  //   setDragOver(true);
-  // }, []);
-
-  // if (channelsData && !channelData) {
-  //   return <Redirect to={`/workspace/${workspace}/channel/일반`} />;
-  // }
-
-  const onDrop = useCallback(() => {}, []);
-  const onDragOver = useCallback(() => {}, []);
-
+  //가입하지않은 채널 접근 제한
   useEffect(() => {
-    setChannelType({ type: "channel", id: channel });
+    if (!channelMembers || !userData || !channel) {
+      return;
+    }
+
+    if (channelMembers.some((m) => m.id === userData?.id)) {
+      setChannelType({ type: "channel", id: channel });
+    } else {
+      const redirectWorkspace = userData.workspaces[0];
+      toast.error(InvalidChannelToken.msg(channel, redirectWorkspace.name), {
+        toastId: InvalidChannelToken.id,
+      });
+      navigate(`/workspace/${redirectWorkspace.url}/channel/일반`);
+    }
+
     return () => {
       setChannelType({ type: undefined, id: undefined });
     };
-  }, [channel]);
+  }, [channelMembers, channel]);
+
+  const onDragEnter = useCallback<DragEventHandler>((e) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const onDragOver = useCallback<DragEventHandler>((e) => {
+    e.preventDefault();
+    if (!dragOver) setDragOver(true);
+  }, []);
+
+  const onDragLeave = useCallback<DragEventHandler>((e) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
+
+  const onDrop = useCallback<DragEventHandler>(
+    (e) => {
+      e.preventDefault();
+      if (!channelData || !userData) {
+        return;
+      }
+      setDragOver(false);
+
+      const formData = new FormData();
+      if (e.dataTransfer.items) {
+        if (e.dataTransfer.items.length > 10) {
+          toast.error(ImgUploadFailToken.msg("이미지는 최대 10장이 추가됩니다."), { toastId: ImgUploadFailToken.id });
+          return;
+        }
+        // Use DataTransferItemList interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          // If dropped items aren't files, reject them
+          if (e.dataTransfer.items[i].kind === "file") {
+            const file = e.dataTransfer.items[i].getAsFile();
+            if (file && file.type.startsWith("image/")) {
+              // console.log(e, ".... file[" + i + "].name = " + file.name);
+              formData.append("image", file);
+            }
+          }
+        }
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        if (e.dataTransfer.files.length > 10) {
+          toast.error(ImgUploadFailToken.msg("이미지는 최대 10장이 추가됩니다."), { toastId: ImgUploadFailToken.id });
+          return;
+        }
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          const file = e.dataTransfer.files[i];
+          if (file && file.type.startsWith("image/")) {
+            // console.log(e, "... file[" + i + "].name = " + file.name);
+            formData.append("image", file);
+          }
+        }
+      }
+
+      postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData)
+        .then(() => toast.success(ImgUploadSuccessToken.msg(), { toastId: ImgUploadSuccessToken.id }))
+        .catch((error) => toast.error(ImgUploadFailToken.msg(error), { toastId: ImgUploadFailToken.id }));
+    },
+    [channelData, userData]
+  );
+
+  const handleFileChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      if (!channelData || !userData) {
+        toast.error("채널 데이터 또는 사용자 데이터가 없습니다.");
+        return;
+      }
+
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith("image/")) {
+          const formData = new FormData();
+          formData.append("image", file);
+
+          postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData)
+            .then(() => toast.success(ImgUploadSuccessToken.msg(), { toastId: ImgUploadSuccessToken.id }))
+            .catch((error) => toast.error(ImgUploadFailToken.msg(error), { toastId: ImgUploadFailToken.id }));
+        } else {
+          toast.error(ImgUploadFailToken.msg("이미지 파일을 선택해주세요."), { toastId: ImgUploadFailToken.id });
+        }
+      }
+    },
+    [channelData, userData, workspace, channel]
+  );
 
   return (
-    <Container onDrop={onDrop} onDragOver={onDragOver}>
+    <Container onDrop={onDrop} onDragEnter={onDragEnter} onDragOver={onDragOver} onDragLeave={onDragLeave}>
       <Header />
       <ChatList
         ref={scrollbarRef}
@@ -232,15 +301,8 @@ const Channel = () => {
         getNextPage={fetchNextPage}
       />
 
-      <ChatBox onSubmitForm={onSubmitForm} />
-      {/*
-      <InviteChannelModal
-        show={showInviteChannelModal}
-        onCloseModal={onCloseModal}
-        setShowInviteChannelModal={setShowInviteChannelModal}
-      />
-      <ToastContainer position="bottom-center" />
-      {dragOver && <DragOver>업로드!</DragOver>} */}
+      <ChatBox onSubmitForm={onSubmitForm} handleFileChange={handleFileChange} />
+      {dragOver && <DragOver>업로드!</DragOver>}
     </Container>
   );
 };

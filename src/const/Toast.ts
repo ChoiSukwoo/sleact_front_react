@@ -64,3 +64,18 @@ export const InvalidWorkspacesToken: ToastTokenDto<(msg1: string, msg2: string) 
   id: "InvalidWorkspacesToken",
   msg: (msg1, mgs2) => `${msg1}은 허용되지 않은 워크스페이스 입니다. ${mgs2}으로 이동합니다.`,
 };
+
+export const InvalidChannelToken: ToastTokenDto<(msg1: string, msg2: string) => string> = {
+  id: "InvalidChannelToken",
+  msg: (msg1, mgs2) => `${msg1}은 허용되지 않은 체널 입니다. ${mgs2}으로 이동합니다.`,
+};
+
+export const ImgUploadSuccessToken: ToastTokenDto = {
+  id: "ImgAddErrorToken",
+  msg: () => `이미지가 성공적으로 업로드되었습니다!`,
+};
+
+export const ImgUploadFailToken: ToastTokenDto<(msg1: string) => string> = {
+  id: "ImgAddErrorToken",
+  msg: (msg1) => `이미지 업로드 실패 : ${msg1}`,
+};

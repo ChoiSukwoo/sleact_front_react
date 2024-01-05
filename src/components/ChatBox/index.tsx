@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import { FC, useCallback, useEffect, useRef } from "react";
+import { ChangeEventHandler, FC, MouseEventHandler, useCallback, useEffect, useRef } from "react";
 
 import TextareaBox from "@components/MentionTextareaBox";
 
@@ -7,6 +7,7 @@ import { ChatArea, Form, SendButton, Toolbox } from "@components/ChatBox/styles"
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 
 import SendMessageIcon from "@svg/sendMessage.svg?react";
+import ImgUploadIcon from "@svg/img_upload.svg?react";
 import { useRecoilValue } from "recoil";
 import channelTypeState from "@recoil/atom/channelType";
 
@@ -16,10 +17,12 @@ interface ChatForm {
 
 interface Props {
   onSubmitForm: (chat: string) => void;
+  handleFileChange: ChangeEventHandler<HTMLInputElement>;
 }
 
-const ChatBox: FC<Props> = ({ onSubmitForm }) => {
+const ChatBox: FC<Props> = ({ onSubmitForm, handleFileChange }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const channel = useRecoilValue(channelTypeState);
 
@@ -57,6 +60,14 @@ const ChatBox: FC<Props> = ({ onSubmitForm }) => {
     console.log(error);
   }, []);
 
+  const handleClick = useCallback<MouseEventHandler>((e) => {
+    e.preventDefault();
+    if (!fileInputRef || !fileInputRef.current) {
+      return;
+    }
+    fileInputRef.current.click();
+  }, []);
+
   return (
     <FormProvider {...method}>
       <ChatArea>
@@ -69,6 +80,18 @@ const ChatBox: FC<Props> = ({ onSubmitForm }) => {
             maxLength={1000}
           />
           <Toolbox>
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+                ref={fileInputRef}
+              />
+              <SendButton onClick={handleClick}>
+                <ImgUploadIcon />
+              </SendButton>
+            </div>
             <SendButton type="submit" disabled={!method.watch("chat").trim()}>
               <SendMessageIcon />
             </SendButton>

@@ -15,7 +15,7 @@ const ChannelList: FC<Props> = () => {
   const workspace = useRecoilValue(workspaceState);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel[], Error>(
-    [workspace, "channels"],
+    ["channelList", workspace],
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
       enabled: userData !== undefined,
