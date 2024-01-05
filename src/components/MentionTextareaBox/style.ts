@@ -37,6 +37,16 @@ export const MentionsTextarea = styled(MentionsInput)({
   },
 });
 
+export const MentionsTextareaLoading = styled.input({
+  fontSize: "15px",
+  lineHeight: "22px",
+  padding: "9px 10px",
+  backgroundColor: "transparent",
+  "::placeholder": {
+    fontFamily: "Pretendard",
+  },
+});
+
 export const EachMention = styled.button<EachMentionProps>(({ focus }) => ({
   padding: "4px 20px",
   background: "transparent",

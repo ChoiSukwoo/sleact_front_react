@@ -16,15 +16,17 @@ import useAxiosPost from "@utils/useAxiosPost";
 import { toast } from "react-toastify";
 import { ImgUploadFailToken, ImgUploadSuccessToken, InvalidChannelToken } from "@const/Toast";
 import { useNavigate } from "react-router-dom";
+import Loading from "./Loading";
 
 const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;
 
 const Channel = () => {
   const workspace = useRecoilValue(workspaceState);
+  const { channel } = useParams<{ channel: string }>();
+
   const navigate = useNavigate();
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
-  const { channel } = useParams<{ channel: string }>();
   const { data: channelMembers } = useQuery<IUser[]>(
     ["channelMembers", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
@@ -43,6 +45,9 @@ const Channel = () => {
   const [tempChatMap, setTempChatMap] = useState<{ [key: string]: IChat[] }>({});
 
   const scrollbarRef = useRef<Scrollbars>(null);
+
+  const storageKey = `channel-lastRead-${workspace}-${channel}`;
+  console.log("Channel ", channel, " Key : ", storageKey);
 
   const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", workspace, channel],
@@ -290,15 +295,9 @@ const Channel = () => {
     [channelData, userData, workspace, channel]
   );
 
-  if (!channelData) {
-    return <>Loading</>;
-  }
-
-  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
-
-  console.log("storageKey : ", storageKey);
-
-  return (
+  return !channelData || !workspace || !channel ? (
+    <Loading />
+  ) : (
     <Container onDrop={onDrop} onDragEnter={onDragEnter} onDragOver={onDragOver} onDragLeave={onDragLeave}>
       <Header />
       <ChatList

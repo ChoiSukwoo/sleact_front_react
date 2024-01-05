@@ -33,7 +33,7 @@ const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, hasNextPage, isF
     <ChatZone>
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
         {Object.entries(chatSections).map(([dateData, chatData]) => (
-          <Section className={`section-${dateData}`} key={dateData}>
+          <Section key={dateData}>
             <StickyHeader>
               <button>{dateData}</button>
             </StickyHeader>

@@ -1,51 +1,59 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
+import { Util } from "Styles";
 
-export const ChatWrapper = styled.div`
-  display: flex;
-  padding: 8px 20px;
+export const ChatWrapper = styled.div({
+  display: "flex",
+  flexDirection: "row",
+  padding: "8px 20px",
+  "&:hover": {
+    background: "#eee",
+  },
+});
 
-  &:hover {
-    background: #eee;
-  }
+export const ChatImg = styled.div({
+  display: "flex",
+  width: "44px",
+  marginRight: "8px",
+  "& img": {
+    width: "44px",
+    height: "44px",
+  },
+});
 
-  & .chat-img {
-    display: flex;
-    width: 36px;
-    margin-right: 8px;
+export const ChatText = styled.div({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+});
 
-    & img {
-      width: 36px;
-      height: 36px;
-    }
-  }
+export const ChatUser = styled.p({
+  width: "100%",
+  height: "22px",
+});
 
-  & .chat-text {
-    display: flex;
-    flex-wrap: wrap;
-    flex: 1;
+export const ChatUserLoading = styled.div({
+  ...Util.LoadingBg,
+  width: "130px",
+  height: "18px",
+  marginBottom: "4px",
+});
 
-    & p {
-      flex: 0 0 100%;
-      margin: 0;
-    }
-  }
+export const ChatUserNm = styled.b({
+  marginRight: "5px",
+});
 
-  & .chat-user {
-    display: flex;
-    flex: 0 0 100%;
-    align-items: center;
+export const ChatSendTime = styled.span({
+  fontSize: "12px",
+});
 
-    & > b {
-      margin-right: 5px;
-    }
+export const ChatResult = styled.p({
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+});
 
-    & > span {
-      font-size: 12px;
-    }
-  }
-
-  & a {
-    text-decoration: none;
-    color: deepskyblue;
-  }
-`;
+export const ChatResultLoading = styled.div({
+  ...Util.LoadingBg,
+  width: "210px",
+  height: "22px",
+});

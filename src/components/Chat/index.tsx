@@ -1,4 +1,12 @@
-import { ChatWrapper } from "@components/Chat/styles";
+import {
+  ChatImg,
+  ChatResult,
+  ChatSendTime,
+  ChatText,
+  ChatUser,
+  ChatUserNm,
+  ChatWrapper,
+} from "@components/Chat/styles";
 import workspaceState from "@recoil/atom/workspace";
 import dayjs from "dayjs";
 import gravatar from "gravatar";
@@ -43,17 +51,16 @@ const Chat: FC<Props> = memo(({ data }) => {
 
   return (
     <ChatWrapper>
-      <div className="chat-img">
+      <ChatImg>
         <img src={gravatar.url(user.email, { s: "36px", d: "retro" })} alt={user.nickname} />
-      </div>
-      <div className="chat-text">
-        <div className="chat-user">
-          <b>{user.nickname}</b>
-          <span>{data.id === 0 ? "Sending" : dayjs(data.createdAt).format("h:mm A")}</span>
-          <span>{data.id}</span>
-        </div>
-        <p>{result}</p>
-      </div>
+      </ChatImg>
+      <ChatText>
+        <ChatUser>
+          <ChatUserNm>{user.nickname}</ChatUserNm>
+          <ChatSendTime>{data.id === 0 ? "Sending" : dayjs(data.createdAt).format("h:mm A")}</ChatSendTime>
+        </ChatUser>
+        <ChatResult>{result}</ChatResult>
+      </ChatText>
     </ChatWrapper>
   );
 });
