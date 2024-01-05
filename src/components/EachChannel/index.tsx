@@ -8,11 +8,11 @@ import useSocket from "@hooks/useSocket";
 import channelTypeState from "@recoil/atom/channelType";
 
 interface Props {
-  channel: IChannel;
+  channelData: IChannel;
 }
-const EachChannel: FC<Props> = ({ channel }) => {
+const EachChannel: FC<Props> = ({ channelData }) => {
   const workspace = useRecoilValue(workspaceState);
-  const channelState = useRecoilValue(channelTypeState);
+  const channel = useRecoilValue(channelState);
   const [socket] = useSocket(workspace);
 
   //현재 접속중인 채널인가?

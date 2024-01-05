@@ -41,7 +41,7 @@ const ChannelList: FC<Props> = () => {
       <div>
         {!isDown &&
           channelData?.map((channel) => {
-            return <EachChannel key={`each_channel_${channel.id}`} channel={channel} />;
+            return <EachChannel key={`each_channel_${channel.id}`} channelData={channel} />;
           })}
       </div>
     </>

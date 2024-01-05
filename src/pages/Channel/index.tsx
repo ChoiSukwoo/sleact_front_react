@@ -2,7 +2,7 @@ import ChatBox from "@components/ChatBox";
 import ChatList from "@components/ChatList";
 import useSocket from "@hooks/useSocket";
 import { Container, DragOver } from "./styles";
-import channelTypeState from "@recoil/atom/channelType";
+import chatTypeState from "@recoil/atom/channelType";
 import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import makeSection from "@utils/makeSection";
@@ -33,7 +33,7 @@ const Channel = () => {
     }
   );
   const [dragOver, setDragOver] = useState(false);
-  const setChannelType = useSetRecoilState(channelTypeState);
+  const setChannelType = useSetRecoilState(chatTypeState);
 
   const [socket] = useSocket(workspace);
   const postRequest = useAxiosPost();
@@ -189,7 +189,7 @@ const Channel = () => {
     }
 
     if (channelMembers.some((m) => m.id === userData?.id)) {
-      setChannelType({ type: "channel", id: channel });
+      setChannelType({ type: "channel", value: channel });
     } else {
       const redirectWorkspace = userData.workspaces[0];
       toast.error(InvalidChannelToken.msg(channel, redirectWorkspace.name), {
@@ -199,7 +199,7 @@ const Channel = () => {
     }
 
     return () => {
-      setChannelType({ type: undefined, id: undefined });
+      setChannelType({ type: undefined, value: undefined });
     };
   }, [channelMembers, channel]);
 
@@ -289,6 +289,14 @@ const Channel = () => {
     },
     [channelData, userData, workspace, channel]
   );
+
+  if (!channelData) {
+    return <>Loading</>;
+  }
+
+  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
+
+  console.log("storageKey : ", storageKey);
 
   return (
     <Container onDrop={onDrop} onDragEnter={onDragEnter} onDragOver={onDragOver} onDragLeave={onDragLeave}>

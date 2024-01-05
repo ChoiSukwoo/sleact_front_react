@@ -11,7 +11,7 @@ import workspace from "@recoil/atom/workspace";
 import useAxiosPost from "@utils/useAxiosPost";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { useRecoilState, useRecoilValue } from "recoil";
-import channelTypeState from "@recoil/atom/channelType";
+import { channelState } from "@recoil/atom/channelType";
 
 interface Props {}
 
@@ -20,7 +20,7 @@ interface InviteChannelDto {
 }
 
 const InviteChannelModal: FC<Props> = ({}) => {
-  const channel = useRecoilValue(channelTypeState);
+  const channel = useRecoilValue(channelState);
 
   const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
 
@@ -40,10 +40,10 @@ const InviteChannelModal: FC<Props> = ({}) => {
   const onSubmit: SubmitHandler<InviteChannelDto> = async (data) => {
     setCurrentModal(undefined);
     reset();
-    if (channel === undefined || channel.type === "dm") {
+    if (!channel) {
       return;
     }
-    postRequest(`/api/workspaces/${workspace}/channels/${channel.id}/members`, data)
+    postRequest(`/api/workspaces/${workspace}/channels/${channel.value}/members`, data)
       .then(() => {
         toast.success(InviteChannelSuccessToken.msg(), { toastId: InviteChannelSuccessToken.id });
       })

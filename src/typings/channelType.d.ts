@@ -1,4 +1,4 @@
-type ChannelType = {
+type ChatType = {
   type: "channel" | "dm" | undefined;
-  id: number | string | undefined;
+  value: number | string | undefined;
 };

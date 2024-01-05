@@ -6,7 +6,7 @@ import { useQuery } from "react-query";
 import gravatar from "gravatar";
 import autosize from "autosize";
 
-import channelTypeState from "@recoil/atom/channelType";
+import { channelState } from "@recoil/atom/channelType";
 import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 
@@ -22,15 +22,14 @@ interface Props {
 const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLength }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const workspace = useRecoilValue(workspaceState);
-  const channel = useRecoilValue(channelTypeState);
+  const channel = useRecoilValue(channelState);
   const { control } = useFormContext();
 
   const { data: channelMembers } = useQuery<IUser[]>(
     ["channelMembers", workspace, channel],
-    () => getFetcher(`/api/workspaces/${workspace}/channels/${channel.id}/members`),
+    () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
     {
-      enabled:
-        workspace !== undefined && channel !== undefined && channel.type === "channel" && channel.id !== undefined,
+      enabled: !!workspace && !!channel,
     }
   );
 

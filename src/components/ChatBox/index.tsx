@@ -9,7 +9,7 @@ import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from "react-
 import SendMessageIcon from "@svg/sendMessage.svg?react";
 import ImgUploadIcon from "@svg/img_upload.svg?react";
 import { useRecoilValue } from "recoil";
-import channelTypeState from "@recoil/atom/channelType";
+import { channelState } from "@recoil/atom/channelType";
 
 interface ChatForm {
   chat: string;
@@ -24,7 +24,7 @@ const ChatBox: FC<Props> = ({ onSubmitForm, handleFileChange }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const channel = useRecoilValue(channelTypeState);
+  const channel = useRecoilValue(channelState);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -76,7 +76,7 @@ const ChatBox: FC<Props> = ({ onSubmitForm, handleFileChange }) => {
             onSubmitForm={method.handleSubmit(onSubmit, onError)}
             name={"chat"}
             rule={validationRules.chat}
-            placeholder={`Message #${channel.type === "channel" && channel.id}`}
+            placeholder={`Message #${channel}`}
             maxLength={1000}
           />
           <Toolbox>

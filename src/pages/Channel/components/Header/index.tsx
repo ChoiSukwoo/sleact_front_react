@@ -3,7 +3,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
 
-import channelTypeState from "@recoil/atom/channelType";
+import { channelState } from "@recoil/atom/channelType";
 import workspaceState from "@recoil/atom/workspace";
 
 import { HeaderStyles, InviteButton } from "./style";
@@ -13,7 +13,7 @@ import { currentModalState } from "@recoil/atom/modal";
 interface Props {}
 
 const Header: FC<Props> = () => {
-  const { id: channel } = useRecoilValue(channelTypeState);
+  const channel = useRecoilValue(channelState);
   const workspace = useRecoilValue(workspaceState);
   const setCurrentModal = useSetRecoilState(currentModalState);
 
@@ -21,7 +21,7 @@ const Header: FC<Props> = () => {
     ["channelMembersData", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
     {
-      enabled: workspace !== undefined && channel !== undefined,
+      enabled: !!workspace && !!channel,
     }
   );
 

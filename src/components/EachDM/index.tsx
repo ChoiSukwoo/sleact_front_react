@@ -4,7 +4,7 @@ import { FC, useCallback, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useRecoilValue } from "recoil";
 import { DMLink, IsOnlineChecker } from "./styles";
-import channelTypeState from "@recoil/atom/channelType";
+import { dmState } from "@recoil/atom/channelType";
 import useSocket from "@hooks/useSocket";
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 
 const EachDM: FC<Props> = ({ member, isOnline }) => {
   const workspace = useRecoilValue(workspaceState);
-  const channelType = useRecoilValue(channelTypeState);
+  const dmstate = useRecoilValue(dmState);
   const [socket] = useSocket(workspace);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {
     refetchOnMount: false,
@@ -39,8 +39,8 @@ const EachDM: FC<Props> = ({ member, isOnline }) => {
 
   const onDmMessage = useCallback(
     (data: IDM) => {
-      //현재 접속 Dm이 아님
-      if (channelType.type === "dm" && channelType.id === member.id) {
+      //현재 접속 Dm이 면 의미없음
+      if (dmstate && dmstate === member.id) {
         return;
       }
       //메시지를 전달받을ID와 채널ID랑 일치하지 않음
