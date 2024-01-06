@@ -17,6 +17,7 @@ import { ImgUploadFailToken, ImgUploadSuccessToken, InvalidChannelToken } from "
 import { useNavigate } from "react-router-dom";
 import Loading from "./loading";
 import lastReadState from "@recoil/atom/lastRead";
+import chatTimeToSoule from "@utils/chatTimeToSoule";
 
 const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;
@@ -63,17 +64,23 @@ const Channel = () => {
   );
 
   const {
-    data: chatData,
+    data: chatListData,
     fetchNextPage, //다음 데이터 호출하기
     hasNextPage, //데이터 호출이 가능한 상태인가 파악
     isFetchingNextPage, //데이터를 불러오는중
   } = useInfiniteQuery(
-    ["chatData", workspace, channel],
-    ({ pageParam = 1 }): Promise<IChat[]> => {
+    ["chatListData", workspace, channel],
+    async ({ pageParam = 1 }): Promise<IChat[]> => {
       const skip = channelData && receivedChatMap[channelData.id] ? receivedChatMap[channelData.id].length : 0;
-      return getFetcher(
+      const chats: IChat[] = await getFetcher(
         `/api/workspaces/${workspace}/channels/${channel}/chats?perpage=${PAGE_SIZE}&page=${pageParam}&skip=${skip}`
       );
+
+      if (import.meta.env.MODE === "production") {
+        return chats.map((chat) => chatTimeToSoule(chat));
+      } else {
+        return chats;
+      }
     },
     {
       getNextPageParam: (lastPage, allPages) => (lastPage.length < PAGE_SIZE ? false : allPages.length + 1),
@@ -89,7 +96,7 @@ const Channel = () => {
   //채팅 전송
   const onSubmitForm = useCallback(
     (chat: string) => {
-      if (chat?.trim() && chatData && channelData && userData) {
+      if (chat?.trim() && chatListData && channelData && userData) {
         //옵티미스틱 처리
         const tempChat: IChat = {
           id: 0,
@@ -124,7 +131,7 @@ const Channel = () => {
         });
       }
     },
-    [chatData, channelData, userData]
+    [chatListData, channelData, userData]
   );
 
   //모든 채팅 파편 합치기
@@ -132,13 +139,13 @@ const Channel = () => {
     if (!channelData) {
       return;
     }
-    const newChatList = chatData?.pages.flat().reverse() ?? [];
+    const newChatList = chatListData?.pages.flat().reverse() ?? [];
     const receivedChatList = receivedChatMap[channelData.id] || [];
     const tempChatList = tempChatMap[channelData.id] || [];
     const chatList = makeSection(newChatList.concat(receivedChatList).concat(tempChatList));
     setChatSections(chatList);
     scrollToBottom();
-  }, [channelData, chatData, receivedChatMap, tempChatMap]);
+  }, [channelData, chatListData, receivedChatMap, tempChatMap]);
 
   const onMessage = useCallback(
     (data: IChat) => {
@@ -146,14 +153,16 @@ const Channel = () => {
         return;
       }
 
+      const chat = import.meta.env.MODE === "production" ? chatTimeToSoule(data) : data;
+
       //접속 이후 채팅내용 기록
       setReceivedChatMap((prev) => ({
         ...prev,
-        [channelData.id]: [...(prev[channelData.id] || []), data],
+        [channelData.id]: [...(prev[channelData.id] || []), chat],
       }));
 
       //마지막으로 읽은 시간 기록
-      const nowTime = new Date(data.createdAt).getTime();
+      const nowTime = new Date(chat.createdAt).getTime();
       localStorage.setItem(storageKey, nowTime.toString());
       setLastRead(nowTime);
     },

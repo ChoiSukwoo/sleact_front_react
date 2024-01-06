@@ -8,6 +8,7 @@ import {
   ChatWrapper,
 } from "@components/Chat/styles";
 import dayjs from "dayjs";
+
 import gravatar from "gravatar";
 import { FC, useMemo, memo } from "react";
 import { Link, useParams } from "react-router-dom";
