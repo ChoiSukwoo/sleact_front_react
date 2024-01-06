@@ -30,6 +30,7 @@ const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLeng
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
     {
       enabled: !!workspace && !!channel,
+      refetchOnMount: "always",
     }
   );
 

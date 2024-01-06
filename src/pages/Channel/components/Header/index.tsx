@@ -17,8 +17,8 @@ const Header: FC<Props> = () => {
   const { workspace } = useParams<{ workspace: string }>();
   const setCurrentModal = useSetRecoilState(currentModalState);
 
-  const { data: channelMembersData } = useQuery<IUser[]>(
-    ["channelMembersData", workspace, channel],
+  const { data: channelMembers } = useQuery<IUser[]>(
+    ["channelMembers", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
     {
       enabled: !!workspace && !!channel,
@@ -33,7 +33,7 @@ const Header: FC<Props> = () => {
     <HeaderStyles>
       <h3># {channel}</h3>
       <div style={{ display: "flex", flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
-        <span style={{ marginRight: "10px" }}>{channelMembersData?.length}</span>
+        <span style={{ marginRight: "10px" }}>{channelMembers?.length}</span>
         <InviteButton onClick={onClickInviteChannel}>
           <PeopleIcon />
         </InviteButton>

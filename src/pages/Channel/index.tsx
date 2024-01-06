@@ -16,36 +16,43 @@ import { toast } from "react-toastify";
 import { ImgUploadFailToken, ImgUploadSuccessToken, InvalidChannelToken } from "@const/Toast";
 import { useNavigate } from "react-router-dom";
 import Loading from "./loading";
+import lastReadState from "@recoil/atom/lastRead";
 
 const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;
 
 const Channel = () => {
+  //param Data
   const { workspace } = useParams<{ workspace: string }>();
   const { channel } = useParams<{ channel: string }>();
+  const storageKey = `channel-lastRead-${workspace}-${channel}`;
 
+  //recoil Data
+  const setChannelType = useSetRecoilState(chatTypeState);
+  const setLastRead = useSetRecoilState(lastReadState(storageKey));
+
+  //hook
+  const [socket] = useSocket(workspace);
+  const postRequest = useAxiosPost();
   const navigate = useNavigate();
+  const scrollbarRef = useRef<Scrollbars>(null);
+
+  const [dragOver, setDragOver] = useState(false);
+  const [chatSections, setChatSections] = useState<MakeSectionResult>({});
+  const [receivedChatMap, setReceivedChatMap] = useState<{ [key: string]: IChat[] }>({});
+  const [tempChatMap, setTempChatMap] = useState<{ [key: string]: IChat[] }>({});
+
+  //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+
   const { data: channelMembers } = useQuery<IUser[]>(
     ["channelMembers", workspace, channel],
     () => getFetcher(`/api/workspaces/${workspace}/channels/${channel}/members`),
     {
       enabled: !!workspace && !!channel,
+      refetchOnMount: "always",
     }
   );
-  const [dragOver, setDragOver] = useState(false);
-  const setChannelType = useSetRecoilState(chatTypeState);
-
-  const [socket] = useSocket(workspace);
-  const postRequest = useAxiosPost();
-
-  const [chatSections, setChatSections] = useState<MakeSectionResult>({});
-  const [receivedChatMap, setReceivedChatMap] = useState<{ [key: string]: IChat[] }>({});
-  const [tempChatMap, setTempChatMap] = useState<{ [key: string]: IChat[] }>({});
-
-  const scrollbarRef = useRef<Scrollbars>(null);
-
-  const storageKey = `channel-lastRead-${workspace}-${channel}`;
 
   const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", workspace, channel],
@@ -70,15 +77,16 @@ const Channel = () => {
     },
     {
       getNextPageParam: (lastPage, allPages) => (lastPage.length < PAGE_SIZE ? false : allPages.length + 1),
-      enabled: workspace !== undefined && channel !== undefined, // enabled 옵션을 추가
+      enabled: !!workspace && !!channel, // enabled 옵션을 추가
       onSuccess(data) {
         if (data.pages.length === 1) {
-          setTimeout(() => scrollbarRef.current?.scrollToBottom(), 100);
+          setTimeout(() => scrollbarRef.current?.scrollToBottom(), 150);
         }
       },
     }
   );
 
+  //채팅 전송
   const onSubmitForm = useCallback(
     (chat: string) => {
       if (chat?.trim() && chatData && channelData && userData) {
@@ -142,12 +150,13 @@ const Channel = () => {
 
       //마지막으로 읽은 시간 기록
       const nowTime = new Date(data.createdAt).getTime();
-      const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
       localStorage.setItem(storageKey, nowTime.toString());
+      setLastRead(nowTime);
     },
     [channel, userData, channelData]
   );
 
+  //150미만 떨어졋을시 바닥으로 스냅
   const scrollToBottom = useCallback(() => {
     const current = scrollbarRef.current;
     if (current) {
@@ -175,8 +184,8 @@ const Channel = () => {
       return;
     }
     const nowTime = new Date().getTime();
-    const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
     localStorage.setItem(storageKey, nowTime.toString());
+    setLastRead(nowTime);
   }, [channelData, workspace]);
 
   //가입하지않은 채널 접근 제한
