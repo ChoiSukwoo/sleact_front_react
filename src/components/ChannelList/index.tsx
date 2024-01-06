@@ -10,23 +10,25 @@ import { useParams } from "react-router-dom";
 interface Props {}
 
 const ChannelList: FC<Props> = () => {
+  //param Data
   const { workspace } = useParams<{ workspace: string }>();
-  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
-  const { data: channelData } = useQuery<IChannel[], Error>(
+  //sever Data
+  const { data: channelList } = useQuery<IChannel[], Error>(
     ["channelList", workspace],
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
-      enabled: userData !== undefined,
+      enabled: !!workspace,
     }
   );
 
   const [isDown, setIsDown] = useState(false);
 
+  //채널리스트 확장 상태 변경
   const toggleChannelCollapse = useCallback(() => {
     setIsDown((prev) => !prev);
   }, []);
 
-  return !channelData ? (
+  return !channelList ? (
     <Loading />
   ) : (
     <>
@@ -38,8 +40,9 @@ const ChannelList: FC<Props> = () => {
       </TitleCover>
       <div>
         {!isDown &&
-          channelData?.map((channel) => {
-            return <EachChannel key={`each_channel_${channel.id}`} channelData={channel} />;
+          channelList.map((channel) => {
+            const key = `each_channel_${channel.id}`;
+            return <EachChannel key={key} channelData={channel} />;
           })}
       </div>
     </>

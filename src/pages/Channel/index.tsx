@@ -46,7 +46,6 @@ const Channel = () => {
   const scrollbarRef = useRef<Scrollbars>(null);
 
   const storageKey = `channel-lastRead-${workspace}-${channel}`;
-  console.log("Channel ", channel, " Key : ", storageKey);
 
   const { data: channelData } = useQuery<IChannel, Error>(
     ["channelData", workspace, channel],
@@ -145,9 +144,6 @@ const Channel = () => {
       const nowTime = new Date(data.createdAt).getTime();
       const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
       localStorage.setItem(storageKey, nowTime.toString());
-      postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
-        time: nowTime,
-      });
     },
     [channel, userData, channelData]
   );
@@ -181,9 +177,6 @@ const Channel = () => {
     const nowTime = new Date().getTime();
     const storageKey = `workspace-lastRead-${workspace}-${channelData.id}`;
     localStorage.setItem(storageKey, nowTime.toString());
-    postRequest(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`, {
-      time: nowTime,
-    });
   }, [channelData, workspace]);
 
   //가입하지않은 채널 접근 제한

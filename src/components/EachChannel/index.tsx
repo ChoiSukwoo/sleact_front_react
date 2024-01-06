@@ -12,43 +12,48 @@ interface Props {
   channelData: IChannel;
 }
 const EachChannel: FC<Props> = ({ channelData }) => {
+  //param Data
   const { workspace } = useParams<{ workspace: string }>();
+
+  //recoil Data
   const channel = useRecoilValue(channelState);
+
+  //hook
   const [socket] = useSocket(workspace);
 
+  //스토리지용 키
+  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
   //현재 접속중인 채널인가?
   const [nowJoinedChannel, setNowJoinedChannel] = useState(true);
-  const storageKey = `channel-lastRead-${workspace}-${channel}`;
-
-  console.log("EachChannel ", channelData.name, " Key : ", storageKey);
-
   const [lastRead, setLastRead] = useRecoilState(lastReadState(storageKey));
 
+  //sever Data
   const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
-    [workspace, channelData.id, "unreads"],
+    ["channel-unread-cnt", workspace, channelData.id],
     async () => {
-      if (!lastRead || nowJoinedChannel || !channelData || !workspace) {
+      if (!lastRead) {
         return;
       }
       const unReadCnt = await getFetcher(
         `/api/workspaces/${workspace}/channels/${channelData.name}/unreads?after=${lastRead}`
       );
       return unReadCnt;
+    },
+    {
+      enabled: !!lastRead,
     }
   );
 
   //안읽은 메시지가 있는가?
   const hasUnReadCnt = !nowJoinedChannel && unReadCnt !== undefined && unReadCnt > 0;
 
+  //메시지 수신시 unReadRefetch
   const onMessage = useCallback(
-    (data: IChat) => {
-      if (data.channelId === channelData.id) {
-        unReadCntRefetch();
-      }
-    },
+    (data: IChat) => data.channelId === channelData.id && unReadCntRefetch(),
     [channelData]
   );
 
+  //소켓연결
   useEffect(() => {
     if (!socket) {
       return;
@@ -61,32 +66,14 @@ const EachChannel: FC<Props> = ({ channelData }) => {
 
   //현재 접속중인 채널인지 확인
   useEffect(() => {
-    const nowJoined = !!(channel && channel === channelData.name);
-    setNowJoinedChannel(nowJoined);
+    setNowJoinedChannel(channel === channelData.name);
   }, [channel, channelData]);
 
   //LastRead 획득
   useEffect(() => {
-    const getLastRead = async () => {
-      if (!workspace || !channelData.id) {
-        console.log("Fail Load LastRead \n workspace: ", workspace, "\n channel.id: ", channelData.id);
-        return;
-      }
-      const localLastRead: number = +(localStorage.getItem(storageKey) || 0);
-      const serverLastRead: number =
-        +(await getFetcher(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`))?.time ?? 0;
-      setLastRead(Math.max(localLastRead, serverLastRead, lastRead));
-    };
-
-    getLastRead();
+    const localLastRead: number = +(localStorage.getItem(storageKey) || 1);
+    setLastRead(Math.max(localLastRead, lastRead));
   }, [workspace, channelData]);
-
-  //LastRead 변동에 따른 UnReadCnt 획득
-  useEffect(() => {
-    if (lastRead || !nowJoinedChannel) {
-      unReadCntRefetch();
-    }
-  }, [lastRead, nowJoinedChannel]);
 
   return (
     <ChannelLink key={channelData.id} to={`/workspace/${workspace}/channel/${channelData.name}`}>

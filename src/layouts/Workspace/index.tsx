@@ -32,11 +32,12 @@ const Workspace: FC = () => {
 
   //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
-  const { data: channelData } = useQuery<IChannel[], Error>(
-    ["channelData", workspace],
+  const { data: channelList } = useQuery<IChannel[], Error>(
+    ["channelList", workspace],
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
       enabled: !!workspace,
+      refetchOnMount: "always",
     }
   );
 
@@ -68,10 +69,10 @@ const Workspace: FC = () => {
 
   //Websocket에 login요청 내가 가입된 Channel에 웹소켓 연결
   useEffect(() => {
-    if (channelData && userData && socket) {
-      socket.emit("login", { id: userData.id, channels: channelData.map((v) => v.id) });
+    if (channelList && userData && socket) {
+      socket.emit("login", { id: userData.id, channels: channelList.map((v) => v.id) });
     }
-  }, [socket, userData, channelData]);
+  }, [socket, userData, channelList]);
 
   return (
     <>
