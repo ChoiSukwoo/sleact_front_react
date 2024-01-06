@@ -16,7 +16,7 @@ import useAxiosPost from "@utils/useAxiosPost";
 import { toast } from "react-toastify";
 import { ImgUploadFailToken, ImgUploadSuccessToken, InvalidChannelToken } from "@const/Toast";
 import { useNavigate } from "react-router-dom";
-import Loading from "./Loading";
+import Loading from "./loading";
 
 const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;

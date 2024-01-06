@@ -29,21 +29,27 @@ import { toast } from "react-toastify";
 import { InvalidWorkspacesToken } from "@const/Toast";
 
 const Workspace: FC = () => {
-  const navigate = useNavigate();
-  const { workspace } = useParams<{ workspace?: string }>();
+  //param Data
+  const { workspace } = useParams<{ workspace: string }>();
+
+  //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel[], Error>(
     ["channelData", workspace],
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
-      enabled: userData !== undefined && workspace !== undefined,
+      enabled: !!workspace,
     }
   );
 
+  //recoilData
   const setWorkspace = useSetRecoilState(workspaceState);
 
+  //hook
+  const navigate = useNavigate();
   const [socket, disconnectSocket] = useSocket(workspace);
 
+  //허용되지 않은 workspace 접근시 접근제한
   useEffect(() => {
     if (!userData || !workspace) {
       return;
@@ -71,6 +77,7 @@ const Workspace: FC = () => {
     };
   }, [disconnectSocket]);
 
+  //Websocket에 login요청 내가 가입된 Channel에 웹소켓 연결
   useEffect(() => {
     if (channelData && userData && socket) {
       socket.emit("login", { id: userData.id, channels: channelData.map((v) => v.id) });
@@ -78,7 +85,7 @@ const Workspace: FC = () => {
   }, [socket, userData, channelData]);
 
   return (
-    <div>
+    <>
       <Header />
       <WorkspaceWrapper>
         <WorkspaceSide />
@@ -94,7 +101,7 @@ const Workspace: FC = () => {
       <CreateChannelModal />
       <InviteWorkspaceModal />
       <InviteChannelModal />
-    </div>
+    </>
   );
 };
 

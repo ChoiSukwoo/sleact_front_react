@@ -15,8 +15,13 @@ import { currentModalState } from "@recoil/atom/modal";
 interface Props {}
 
 export const ChannelSide: FC<Props> = ({}) => {
-  const { workspace } = useParams<{ workspace?: string }>();
+  //param Data
+  const { workspace } = useParams<{ workspace: string }>();
+
+  //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+
+  //recoil Data
   const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
 
   const isWorkspaceMenu = currentModal === "workspaceMenu";

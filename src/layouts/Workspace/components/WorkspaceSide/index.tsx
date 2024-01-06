@@ -10,20 +10,26 @@ import { useSetRecoilState } from "recoil";
 interface Props {}
 
 export const WorkspaceSide: FC<Props> = ({}) => {
+  //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  //recoil Data
   const setCurrentModal = useSetRecoilState(currentModalState);
+  //워크스페이스 생성 모달 On
   const onClickCreateWorkspace = useCallback(() => {
     setCurrentModal("createWorkspace");
   }, []);
 
-  return userData === undefined ? (
+  return !userData ? (
     <Loading />
   ) : (
     <Workspaces>
-      {userData?.workspaces.map((workspace) => {
+      {userData.workspaces.map((workspace) => {
+        const key = `workspace_link_${workspace.id}`;
+        const link = `/workspace/${workspace.url}/channel/일반`;
+        const logo = workspace.name.slice(0, 1).toUpperCase();
         return (
-          <Link key={workspace.id} to={`/workspace/${workspace.url}/channel/일반`}>
-            <WorkspaceButton>{workspace.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
+          <Link key={key} to={link}>
+            <WorkspaceButton>{logo}</WorkspaceButton>
           </Link>
         );
       })}
