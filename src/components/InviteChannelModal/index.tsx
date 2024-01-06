@@ -43,7 +43,7 @@ const InviteChannelModal: FC<Props> = ({}) => {
     if (!channel) {
       return;
     }
-    postRequest(`/api/workspaces/${workspace}/channels/${channel}/members`, data)
+    postRequest(`/api/workspaces/${workspace}/channels/${channel}/members`, data, { withCredentials: true })
       .then(() => {
         toast.success(InviteChannelSuccessToken.msg(), { toastId: InviteChannelSuccessToken.id });
       })

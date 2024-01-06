@@ -45,7 +45,7 @@ const CreateChannelModal: FC<Props> = ({}) => {
   });
 
   const onSubmit: SubmitHandler<CreateChannelDto> = async (data) => {
-    postRequest(`/api/workspaces/${workspace}/channels`, data)
+    postRequest(`/api/workspaces/${workspace}/channels`, data, { withCredentials: true })
       .then(() => {
         toast.success(CreateChannelSuccssToken.msg(), { toastId: CreateChannelSuccssToken.id });
         reset();

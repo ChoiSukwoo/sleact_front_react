@@ -106,9 +106,13 @@ const Channel = () => {
           [channelData.id]: [...(prev[channelData.id] || []), tempChat],
         }));
 
-        postRequest(`/api/workspaces/${workspace}/channels/${channel}/chats`, {
-          content: chat,
-        }).finally(() => {
+        postRequest(
+          `/api/workspaces/${workspace}/channels/${channel}/chats`,
+          {
+            content: chat,
+          },
+          { withCredentials: true }
+        ).finally(() => {
           setTempChatMap((prev) => {
             const prevChats = prev[channelData.id] || [];
             const updatedChats = prevChats.filter((chat) => chat !== tempChat); // tempChat 객체를 이용하여 비교
@@ -264,7 +268,7 @@ const Channel = () => {
         }
       }
 
-      postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData)
+      postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData, { withCredentials: true })
         .then(() => toast.success(ImgUploadSuccessToken.msg(), { toastId: ImgUploadSuccessToken.id }))
         .catch((error) => toast.error(ImgUploadFailToken.msg(error), { toastId: ImgUploadFailToken.id }));
     },
@@ -285,7 +289,7 @@ const Channel = () => {
           const formData = new FormData();
           formData.append("image", file);
 
-          postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData)
+          postRequest(`/api/workspaces/${workspace}/channels/${channel}/images`, formData, { withCredentials: true })
             .then(() => toast.success(ImgUploadSuccessToken.msg(), { toastId: ImgUploadSuccessToken.id }))
             .catch((error) => toast.error(ImgUploadFailToken.msg(error), { toastId: ImgUploadFailToken.id }));
         } else {

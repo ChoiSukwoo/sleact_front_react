@@ -47,7 +47,7 @@ const CreateWorkspaceModal: FC<Props> = ({}) => {
   });
 
   const onSubmit: SubmitHandler<CreateWorkspaceDto> = async (data) => {
-    postRequest("/api/workspaces", data)
+    postRequest("/api/workspaces", data, { withCredentials: true })
       .then(() => {
         toast.success(CreateWorkspaceSuccssToken.msg(), { toastId: CreateWorkspaceSuccssToken.id });
         reset();

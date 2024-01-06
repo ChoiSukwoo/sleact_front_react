@@ -51,7 +51,7 @@ const InviteWorkspaceModal: FC<Props> = ({}) => {
     setCurrentModal(undefined);
     reset();
 
-    postRequest(`/api/workspaces/${workspace}/members`, data)
+    postRequest(`/api/workspaces/${workspace}/members`, data, { withCredentials: true })
       .then(() => {
         toast.success(InviteWorkspaceSuccessToken.msg(), { toastId: InviteWorkspaceSuccessToken.id });
       })
