@@ -2,10 +2,11 @@ import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { ChannelLink } from "./styles";
 import useSocket from "@hooks/useSocket";
-import channelTypeState from "@recoil/atom/channelType";
+import { channelState } from "@recoil/atom/channelType";
+import lastReadState from "@recoil/atom/lastRead";
 
 interface Props {
   channelData: IChannel;
@@ -17,41 +18,22 @@ const EachChannel: FC<Props> = ({ channelData }) => {
 
   //현재 접속중인 채널인가?
   const [nowJoinedChannel, setNowJoinedChannel] = useState(true);
+  const storageKey = `channel-lastRead-${workspace}-${channel}`;
 
-  const { data: lastRead, refetch: refetchLastRead } = useQuery<LastReadType>(
-    [workspace, channel.id, "unreads"],
-    async () => {
-      if (!workspace || !channel.id || nowJoinedChannel) {
-        return undefined;
-      }
-      const storageKey = `workspace-lastRead-${workspace}-${channel.id}`;
-      const localLastRead = localStorage.getItem(storageKey);
-      if (localLastRead) {
-        return {
-          time: localLastRead,
-        };
-      }
-      const serverLastRead = await getFetcher(`/api/users/workspace/${workspace}/channel/${channel.id}/lastread`);
-      return serverLastRead;
-    },
-    {
-      enabled: !!workspace && !!channel.id && !nowJoinedChannel,
-    }
-  );
+  console.log("EachChannel ", channelData.name, " Key : ", storageKey);
+
+  const [lastRead, setLastRead] = useRecoilState(lastReadState(storageKey));
 
   const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
-    [workspace, channel.name, "unreads"],
+    [workspace, channelData.id, "unreads"],
     async () => {
-      if (!lastRead || nowJoinedChannel) {
+      if (!lastRead || nowJoinedChannel || !channelData || !workspace) {
         return;
       }
       const unReadCnt = await getFetcher(
-        `/api/workspaces/${workspace}/channels/${channel.name}/unreads?after=${lastRead?.time}`
+        `/api/workspaces/${workspace}/channels/${channelData.name}/unreads?after=${lastRead}`
       );
       return unReadCnt;
-    },
-    {
-      enabled: !!workspace && !!channel.name && lastRead !== undefined && !nowJoinedChannel,
     }
   );
 
@@ -60,12 +42,11 @@ const EachChannel: FC<Props> = ({ channelData }) => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      if (channelState.type !== "channel" || nowJoinedChannel || data.channelId !== channel.id) {
-        return;
+      if (data.channelId === channelData.id) {
+        unReadCntRefetch();
       }
-      unReadCntRefetch();
     },
-    [channelState, nowJoinedChannel, channel]
+    [channelData]
   );
 
   useEffect(() => {
@@ -78,26 +59,38 @@ const EachChannel: FC<Props> = ({ channelData }) => {
     };
   }, [socket, onMessage]);
 
+  //현재 접속중인 채널인지 확인
   useEffect(() => {
-    if (!!workspace && !!channel.id && !nowJoinedChannel) {
-      refetchLastRead();
-    }
-  }, [workspace, channelState]);
+    const nowJoined = !!(channel && channel === channelData.name);
+    setNowJoinedChannel(nowJoined);
+  }, [channel, channelData]);
 
+  //LastRead 획득
+  useEffect(() => {
+    const getLastRead = async () => {
+      if (!workspace || !channelData.id) {
+        console.log("Fail Load LastRead \n workspace: ", workspace, "\n channel.id: ", channelData.id);
+        return;
+      }
+      const localLastRead: number = +(localStorage.getItem(storageKey) || 0);
+      const serverLastRead: number =
+        +(await getFetcher(`/api/users/workspace/${workspace}/channel/${channelData.id}/lastread`))?.time ?? 0;
+      setLastRead(Math.max(localLastRead, serverLastRead, lastRead));
+    };
+
+    getLastRead();
+  }, [workspace, channelData]);
+
+  //LastRead 변동에 따른 UnReadCnt 획득
   useEffect(() => {
     if (lastRead || !nowJoinedChannel) {
       unReadCntRefetch();
     }
-  }, [lastRead]);
-
-  useEffect(() => {
-    const nowJoined = channelState.type === "channel" && channelState.id === channel.name;
-    setNowJoinedChannel(nowJoined);
-  }, [channelState, channel]);
+  }, [lastRead, nowJoinedChannel]);
 
   return (
-    <ChannelLink key={channel.id} to={`/workspace/${workspace}/channel/${channel.name}`}>
-      <span># {channel.name}</span>
+    <ChannelLink key={channelData.id} to={`/workspace/${workspace}/channel/${channelData.name}`}>
+      <span># {channelData.name}</span>
       {hasUnReadCnt ?? <span className="count">{unReadCnt}</span>}
     </ChannelLink>
   );
