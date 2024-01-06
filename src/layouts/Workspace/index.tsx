@@ -23,8 +23,6 @@ import Header from "./components/Header";
 import { getFetcher } from "@utils/fetcher";
 import useSocket from "@hooks/useSocket";
 import ChannelSide from "./components/ChannelSide";
-import { useSetRecoilState } from "recoil";
-import workspaceState from "@recoil/atom/workspace";
 import { toast } from "react-toastify";
 import { InvalidWorkspacesToken } from "@const/Toast";
 
@@ -42,9 +40,6 @@ const Workspace: FC = () => {
     }
   );
 
-  //recoilData
-  const setWorkspace = useSetRecoilState(workspaceState);
-
   //hook
   const navigate = useNavigate();
   const [socket, disconnectSocket] = useSocket(workspace);
@@ -55,19 +50,13 @@ const Workspace: FC = () => {
       return;
     }
 
-    if (userData.workspaces.some((w) => w.url === workspace)) {
-      setWorkspace(workspace);
-    } else {
+    if (!userData.workspaces.some((w) => w.url === workspace)) {
       const redirectWorkspace = userData.workspaces[0];
       toast.error(InvalidWorkspacesToken.msg(workspace, redirectWorkspace.name), {
         toastId: InvalidWorkspacesToken.id,
       });
       navigate(`/workspace/${redirectWorkspace.url}/channel/일반`);
     }
-
-    return () => {
-      setWorkspace(undefined);
-    };
   }, [userData, workspace]);
 
   //워크스페이스 변경시 연결 종료

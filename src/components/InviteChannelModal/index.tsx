@@ -7,11 +7,11 @@ import { FC, useCallback } from "react";
 import { toast } from "react-toastify";
 import { InviteChannelSuccessToken, InviteChannelFailToken } from "@const/Toast";
 import { currentModalState } from "@recoil/atom/modal";
-import workspace from "@recoil/atom/workspace";
 import useAxiosPost from "@utils/useAxiosPost";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { channelState } from "@recoil/atom/channelType";
+import { useParams } from "react-router-dom";
 
 interface Props {}
 
@@ -21,7 +21,7 @@ interface InviteChannelDto {
 
 const InviteChannelModal: FC<Props> = ({}) => {
   const channel = useRecoilValue(channelState);
-
+  const { workspace } = useParams<{ workspace: string }>();
   const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
 
   const isShow = currentModal === "inviteChannel";

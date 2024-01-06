@@ -3,14 +3,13 @@ import ChatList from "@components/ChatList";
 import useSocket from "@hooks/useSocket";
 import { Container, DragOver } from "./styles";
 import chatTypeState from "@recoil/atom/channelType";
-import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import makeSection from "@utils/makeSection";
 import { ChangeEventHandler, DragEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import { useInfiniteQuery, useQuery } from "react-query";
 import { useParams } from "react-router";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import Header from "./components/Header";
 import useAxiosPost from "@utils/useAxiosPost";
 import { toast } from "react-toastify";
@@ -22,7 +21,7 @@ const PAGE_SIZE = 20;
 const SNAP_HEIGHT = 150;
 
 const Channel = () => {
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const { channel } = useParams<{ channel: string }>();
 
   const navigate = useNavigate();

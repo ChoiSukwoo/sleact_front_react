@@ -7,10 +7,10 @@ import gravatar from "gravatar";
 import autosize from "autosize";
 
 import { channelState } from "@recoil/atom/channelType";
-import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 
 import { EachMention, MentionsTextarea } from "./style";
+import { useParams } from "react-router-dom";
 
 interface Props {
   onSubmitForm: (e: any) => void;
@@ -21,7 +21,7 @@ interface Props {
 }
 const TextareaBox: FC<Props> = ({ name, rule, onSubmitForm, placeholder, maxLength }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const channel = useRecoilValue(channelState);
   const { control } = useFormContext();
 

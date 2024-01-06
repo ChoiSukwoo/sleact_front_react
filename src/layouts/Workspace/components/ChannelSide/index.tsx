@@ -25,6 +25,9 @@ export const ChannelSide: FC<Props> = ({}) => {
   const [currentModal, setCurrentModal] = useRecoilState(currentModalState);
 
   const isWorkspaceMenu = currentModal === "workspaceMenu";
+  const workspaceNm = userData?.workspaces.find((v) => v.url === workspace)?.name ?? "";
+
+  //모달 활성화
   const onClickWorkspaceMenu = useCallback(() => {
     setCurrentModal("workspaceMenu");
   }, []);
@@ -39,14 +42,12 @@ export const ChannelSide: FC<Props> = ({}) => {
     <Loading />
   ) : (
     <Channels>
-      <WorkspaceName onClick={onClickWorkspaceMenu}>
-        {userData?.workspaces.find((v) => v.url === workspace)?.name}
-      </WorkspaceName>
+      <WorkspaceName onClick={onClickWorkspaceMenu}>{workspaceNm}</WorkspaceName>
       <MenuScroll>
         {isWorkspaceMenu && (
           <Menu style={{ top: 95, left: 80 }}>
             <WorkspaceModal>
-              <h2>{userData?.workspaces.find((v) => v.url === workspace)?.name}</h2>
+              <h2>{workspaceNm}</h2>
               <button onClick={onClickInviteWorkspace}>워크스페이스에 사용자 초대</button>
               <button onClick={onClickCreateChannel}>채널 만들기</button>
             </WorkspaceModal>

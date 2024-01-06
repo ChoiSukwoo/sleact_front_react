@@ -1,4 +1,3 @@
-import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useQuery } from "react-query";
@@ -7,12 +6,13 @@ import { ChannelLink } from "./styles";
 import useSocket from "@hooks/useSocket";
 import { channelState } from "@recoil/atom/channelType";
 import lastReadState from "@recoil/atom/lastRead";
+import { useParams } from "react-router-dom";
 
 interface Props {
   channelData: IChannel;
 }
 const EachChannel: FC<Props> = ({ channelData }) => {
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const channel = useRecoilValue(channelState);
   const [socket] = useSocket(workspace);
 

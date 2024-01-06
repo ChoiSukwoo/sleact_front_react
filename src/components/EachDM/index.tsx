@@ -1,4 +1,3 @@
-import workspaceState from "@recoil/atom/workspace";
 import { getFetcher } from "@utils/fetcher";
 import { FC, useCallback, useEffect } from "react";
 import { useQuery } from "react-query";
@@ -6,6 +5,7 @@ import { useRecoilValue } from "recoil";
 import { DMLink, IsOnlineChecker } from "./styles";
 import { dmState } from "@recoil/atom/channelType";
 import useSocket from "@hooks/useSocket";
+import { useParams } from "react-router-dom";
 
 interface Props {
   member: IUser;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const EachDM: FC<Props> = ({ member, isOnline }) => {
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const dmstate = useRecoilValue(dmState);
   const [socket] = useSocket(workspace);
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {

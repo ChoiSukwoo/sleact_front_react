@@ -7,12 +7,10 @@ import {
   ChatUserNm,
   ChatWrapper,
 } from "@components/Chat/styles";
-import workspaceState from "@recoil/atom/workspace";
 import dayjs from "dayjs";
 import gravatar from "gravatar";
 import { FC, useMemo, memo } from "react";
-import { Link } from "react-router-dom";
-import { useRecoilValue } from "recoil";
+import { Link, useParams } from "react-router-dom";
 import regexifyString from "regexify-string";
 
 interface Props {
@@ -23,7 +21,7 @@ interface Props {
 const BACK_URL = import.meta.env.MODE === "production" ? "https://api.slack.sukwoo.kr" : "http://localhost:3030";
 
 const Chat: FC<Props> = memo(({ data }) => {
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const user: IUser = "sender" in data ? data.sender : data.user;
   const result = useMemo<(string | JSX.Element)[] | JSX.Element>(
     () =>

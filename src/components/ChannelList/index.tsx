@@ -3,16 +3,14 @@ import { getFetcher } from "@utils/fetcher";
 import { FC, useCallback, useState } from "react";
 import { useQuery } from "react-query";
 import { CollapseButton, TitleCover } from "./styles";
-import { useRecoilValue } from "recoil";
-import workspaceState from "@recoil/atom/workspace";
-
 import CollapseIcon from "@svg/expand.svg?react";
 import Loading from "./loading";
+import { useParams } from "react-router-dom";
 
 interface Props {}
 
 const ChannelList: FC<Props> = () => {
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { data: channelData } = useQuery<IChannel[], Error>(
     ["channelList", workspace],

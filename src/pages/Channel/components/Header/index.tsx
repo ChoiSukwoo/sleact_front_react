@@ -4,17 +4,17 @@ import { useQuery } from "react-query";
 import { getFetcher } from "@utils/fetcher";
 
 import { channelState } from "@recoil/atom/channelType";
-import workspaceState from "@recoil/atom/workspace";
 
 import { HeaderStyles, InviteButton } from "./style";
 import PeopleIcon from "@svg/people.svg?react";
 import { currentModalState } from "@recoil/atom/modal";
+import { useParams } from "react-router-dom";
 
 interface Props {}
 
 const Header: FC<Props> = () => {
   const channel = useRecoilValue(channelState);
-  const workspace = useRecoilValue(workspaceState);
+  const { workspace } = useParams<{ workspace: string }>();
   const setCurrentModal = useSetRecoilState(currentModalState);
 
   const { data: channelMembersData } = useQuery<IUser[]>(
