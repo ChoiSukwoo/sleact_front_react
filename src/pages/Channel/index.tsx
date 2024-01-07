@@ -29,7 +29,7 @@ const Channel = () => {
   const storageKey = `channel-lastRead-${workspace}-${channel}`;
 
   //recoil Data
-  const setChannelType = useSetRecoilState(chatTypeState);
+  const setChatType = useSetRecoilState(chatTypeState);
   const setLastRead = useSetRecoilState(lastReadState(storageKey));
 
   //hook
@@ -69,9 +69,9 @@ const Channel = () => {
     hasNextPage, //데이터 호출이 가능한 상태인가 파악
     isFetchingNextPage, //데이터를 불러오는중
   } = useInfiniteQuery(
-    ["chatListData", workspace, channel],
+    ["channelChatListData", workspace, channel],
     async ({ pageParam = 1 }): Promise<IChat[]> => {
-      const skip = channelData && receivedChatMap[channelData.id] ? receivedChatMap[channelData.id].length : 0;
+      const skip = !!(channelData && receivedChatMap[channelData.id]) ? receivedChatMap[channelData.id].length : 0;
       const chats: IChat[] = await getFetcher(
         `/api/workspaces/${workspace}/channels/${channel}/chats?perpage=${PAGE_SIZE}&page=${pageParam}&skip=${skip}`
       );
@@ -84,7 +84,8 @@ const Channel = () => {
     },
     {
       getNextPageParam: (lastPage, allPages) => (lastPage.length < PAGE_SIZE ? false : allPages.length + 1),
-      enabled: !!workspace && !!channel, // enabled 옵션을 추가
+      enabled: !!workspace && !!channel,
+      refetchOnMount: "always",
       onSuccess(data) {
         if (data.pages.length === 1) {
           setTimeout(() => scrollbarRef.current?.scrollToBottom(), 150);
@@ -203,24 +204,23 @@ const Channel = () => {
 
   //가입하지않은 채널 접근 제한
   useEffect(() => {
-    if (!channelMembers || !userData || !channel) {
+    if (!workspace || !channelMembers || !userData || !channel) {
       return;
     }
 
     if (channelMembers.some((m) => m.id === userData?.id)) {
-      setChannelType({ type: "channel", value: channel });
+      setChatType({ type: "channel", value: channel });
     } else {
-      const redirectWorkspace = userData.workspaces[0];
-      toast.error(InvalidChannelToken.msg(channel, redirectWorkspace.name), {
+      toast.error(InvalidChannelToken.msg(channel), {
         toastId: InvalidChannelToken.id,
       });
-      navigate(`/workspace/${redirectWorkspace.url}/channel/일반`);
+      navigate(`/workspace/${workspace}/channel/일반`);
     }
 
     return () => {
-      setChannelType({ type: undefined, value: undefined });
+      setChatType({ type: undefined, value: undefined });
     };
-  }, [channelMembers, channel]);
+  }, [channelMembers, channel, userData, workspace]);
 
   const onDragEnter = useCallback<DragEventHandler>((e) => {
     e.preventDefault();
@@ -322,7 +322,7 @@ const Channel = () => {
         getNextPage={fetchNextPage}
       />
 
-      <ChatBox onSubmitForm={onSubmitForm} handleFileChange={handleFileChange} />
+      <ChatBox onSubmitForm={onSubmitForm} handleFileChange={handleFileChange} receiver={channel} />
       {dragOver && <DragOver>업로드!</DragOver>}
     </Container>
   );
