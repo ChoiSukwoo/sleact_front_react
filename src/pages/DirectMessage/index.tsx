@@ -145,14 +145,15 @@ const DirectMessage = () => {
         !otherData ||
         !id ||
         !userData ||
-        !(data.senderId === userData.id && data.receiverId === Number(id)) ||
-        (data.senderId === Number(id) && data.receiverId === userData.id)
+        !(
+          (data.senderId === userData.id && data.receiverId === Number(id)) ||
+          (data.senderId === Number(id) && data.receiverId === userData.id)
+        )
       ) {
         return;
       }
 
       const chat = import.meta.env.MODE === "production" ? chatTimeToSoule(data) : data;
-
       //접속 이후 채팅내용 기록
       setReceivedChatMap((prev) => ({
         ...prev,
