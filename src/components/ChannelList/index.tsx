@@ -18,6 +18,7 @@ const ChannelList: FC<Props> = () => {
     () => getFetcher(`/api/workspaces/${workspace}/channels`),
     {
       enabled: !!workspace,
+      refetchOnMount: "always",
     }
   );
 

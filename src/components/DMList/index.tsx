@@ -15,13 +15,15 @@ interface Props {
 }
 
 const DMList: FC<Props> = () => {
+  //param Data
   const { workspace } = useParams<{ workspace: string }>();
-  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
+  //sever Data
   const { data: memberData } = useQuery<IUser[], Error>(
     [workspace, "members"],
     () => getFetcher(`/api/workspaces/${workspace}/members`),
     {
-      enabled: userData !== undefined && workspace !== undefined,
+      enabled: workspace !== undefined,
+      refetchOnMount: "always",
     }
   );
   const [socket] = useSocket(workspace);
@@ -63,7 +65,8 @@ const DMList: FC<Props> = () => {
         {!isDown &&
           memberData?.map((member) => {
             const isOnline = onlineList.includes(member.id);
-            return <EachDM key={member.id} member={member} isOnline={isOnline} />;
+            const key = `each_dm_user_${member.id}`;
+            return <EachDM key={key} member={member} isOnline={isOnline} />;
           })}
       </div>
     </>

@@ -15,17 +15,16 @@ const EachChannel: FC<Props> = ({ channelData }) => {
   //param Data
   const { workspace } = useParams<{ workspace: string }>();
 
+  //스토리지용 키
+  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
+
   //recoil Data
   const channel = useRecoilValue(channelState);
+  const [lastRead, setLastRead] = useRecoilState(lastReadState(storageKey));
 
   //hook
   const [socket] = useSocket(workspace);
-
-  //스토리지용 키
-  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
-  //현재 접속중인 채널인가?
   const [nowJoinedChannel, setNowJoinedChannel] = useState(true);
-  const [lastRead, setLastRead] = useRecoilState(lastReadState(storageKey));
 
   //sever Data
   const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
@@ -73,7 +72,7 @@ const EachChannel: FC<Props> = ({ channelData }) => {
   useEffect(() => {
     const localLastRead: number = +(localStorage.getItem(storageKey) || 1);
     setLastRead(Math.max(localLastRead, lastRead));
-  }, [workspace, channelData]);
+  }, [workspace, channel]);
 
   return (
     <ChannelLink key={channelData.id} to={`/workspace/${workspace}/channel/${channelData.name}`}>

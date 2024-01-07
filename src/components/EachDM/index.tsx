@@ -1,11 +1,12 @@
 import { getFetcher } from "@utils/fetcher";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { DMLink, IsOnlineChecker } from "./styles";
 import { dmState } from "@recoil/atom/channelType";
 import useSocket from "@hooks/useSocket";
 import { useParams } from "react-router-dom";
+import lastReadState from "@recoil/atom/lastRead";
 
 interface Props {
   member: IUser;
@@ -13,42 +14,55 @@ interface Props {
 }
 
 const EachDM: FC<Props> = ({ member, isOnline }) => {
+  //param Data
   const { workspace } = useParams<{ workspace: string }>();
-  const dmstate = useRecoilValue(dmState);
+  //스토리지용 키
+  const storageKey = `dm-lastRead-${workspace}-${member.id}`;
+
+  //recoil Data
+  const dm = useRecoilValue(dmState);
+  const [lastRead, setLastRead] = useRecoilState(lastReadState(storageKey));
+
+  //hook
   const [socket] = useSocket(workspace);
+  const [nowJoinedChannel, setNowJoinedChannel] = useState(true);
+
+  //sever Data
   const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"), {
     refetchOnMount: false,
   });
 
-  const { data: lastRead } = useQuery<LastReadType>(
-    [workspace, member.id, "lastread"],
-    () => getFetcher(`/api/users/workspace/${workspace}/dm/${member.id}/lastread`),
+  //sever Data
+  const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
+    ["dm-unread-cnt", workspace, member.id],
+    async () => {
+      if (!lastRead) {
+        return;
+      }
+      const unReadCnt = await getFetcher(`/api/workspaces/${workspace}/dms/${member.id}/unreads?after=${lastRead}`);
+      return unReadCnt;
+    },
     {
-      enabled: userData !== undefined && workspace !== undefined && member.id !== undefined,
+      enabled: !!lastRead,
     }
   );
 
-  const { data: unReadCnt, refetch: unReadCntRefetch } = useQuery<number>(
-    [workspace, member.id, "unreads"],
-    () => getFetcher(`/api/workspaces/${workspace}/dms/${member.id}/unreads?after=${lastRead?.time}`),
-    {
-      enabled:
-        lastRead !== undefined && workspace !== undefined && member.id !== undefined && lastRead.time !== undefined,
-    }
-  );
+  //안읽은 메시지가 있는가?
+  const hasUnReadCnt = !nowJoinedChannel && unReadCnt !== undefined && unReadCnt > 0;
 
   const onDmMessage = useCallback(
     (data: IDM) => {
-      //현재 접속 Dm이 면 의미없음
-      if (dmstate && dmstate === member.id) {
+      if (!userData) {
         return;
       }
-      //메시지를 전달받을ID와 채널ID랑 일치하지 않음
-      if (data.senderId !== member.id) {
-        return;
+      if (
+        (data.senderId === userData.id && data.receiverId === member.id) ||
+        (data.senderId === member.id && data.receiverId === userData.id)
+      ) {
+        unReadCntRefetch();
       }
-      unReadCntRefetch();
     },
+
     [member]
   );
 
@@ -62,12 +76,23 @@ const EachDM: FC<Props> = ({ member, isOnline }) => {
     };
   }, [socket, onDmMessage]);
 
+  //현재 접속중인 채널인지 확인
+  useEffect(() => {
+    setNowJoinedChannel(dm === member.id);
+  }, [dm, member]);
+
+  //LastRead 획득
+  useEffect(() => {
+    const localLastRead: number = +(localStorage.getItem(storageKey) || 1);
+    setLastRead(Math.max(localLastRead, lastRead));
+  }, [workspace, dm]);
+
   return (
     <DMLink key={member.id} to={`/workspace/${workspace}/dm/${member.id}`}>
       <IsOnlineChecker isOnline={isOnline} />
       <span>{member.nickname}</span>
       {member.id === userData?.id && <span> (나)</span>}
-      {unReadCnt && unReadCnt > 0 ? <span className="count">{unReadCnt}</span> : <></>}
+      {hasUnReadCnt ?? <span className="count">{unReadCnt}</span>}
     </DMLink>
   );
 };

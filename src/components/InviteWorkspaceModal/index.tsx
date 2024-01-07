@@ -23,12 +23,11 @@ interface InviteWorkspaceDto {
 
 const InviteWorkspaceModal: FC<Props> = ({}) => {
   const { workspace } = useParams<{ workspace?: string }>();
-  const { data: userData } = useQuery<IUser, Error>("userInfo", () => getFetcher("/api/users"));
   const { refetch: refetchMember } = useQuery<IChannel[], Error>(
     [workspace, "members"],
     () => getFetcher(`/api/workspaces/${workspace}/members`),
     {
-      enabled: userData !== undefined && workspace !== undefined,
+      enabled: workspace !== undefined,
     }
   );
 
