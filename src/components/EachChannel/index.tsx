@@ -16,7 +16,7 @@ const EachChannel: FC<Props> = ({ channelData }) => {
   const { workspace } = useParams<{ workspace: string }>();
 
   //스토리지용 키
-  const storageKey = `channel-lastRead-${workspace}-${channelData.id}`;
+  const storageKey = `channel-lastRead-${workspace}-${channelData.name}`;
 
   //recoil Data
   const channel = useRecoilValue(channelState);
